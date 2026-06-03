@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StockMind AI · 价值投资学习平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/hold-le.css" />
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════════
+       Navigation Bar
+       ═══════════════════════════════════════════ -->
+    <nav class="navbar" id="navbar">
+      <div class="navbar__brand">StockMind AI</div>
+
+      <ul class="navbar__links">
+        <li><button class="navbar__link active" data-view="home">首页</button></li>
+        <li class="dropdown" id="filterDropdown">
+          <button class="dropdown__trigger">
+            筛选器
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 6l4 4 4-4" />
+            </svg>
+          </button>
+          <div class="dropdown__menu">
+            <button class="dropdown__item" data-view="a-share">
+              <span class="icon">🇨🇳</span>
+              <div>
+                A 股
+                <span class="sub">A股市场财务数据筛选</span>
+              </div>
+            </button>
+            <button class="dropdown__item" data-view="pyramid">
+              <span class="icon">🔺</span>
+              <div>
+                金字塔
+                <span class="sub">上涨潜力排行榜</span>
+              </div>
+            </button>
+            <button class="dropdown__item" data-view="contrast">
+              <span class="icon">⇆</span>
+              <div>
+                对比
+                <span class="sub">个股对比工具</span>
+              </div>
+            </button>
+          </div>
+        </li>
+
+        <li><button class="navbar__link" data-view="courses">交易课</button></li>
+        <li><button class="navbar__link" data-view="about">关于</button></li>
+      </ul>
+
+      <div class="navbar__search">
+        <svg
+          class="search-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <circle cx="7" cy="7" r="5" />
+          <path d="M11 11l3.5 3.5" />
+        </svg>
+        <input
+          type="text"
+          id="globalSearch"
+          placeholder="搜索个股代码或名称..."
+          autocomplete="off"
+        />
+      </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════
+       Search Overlay
+       ═══════════════════════════════════════════ -->
+    <div class="search-overlay" id="searchOverlay">
+      <div class="search-overlay__results" id="searchResults"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+       App Layout
+       ═══════════════════════════════════════════ -->
+    <div class="app-layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar__title">行业分类</div>
+        <div id="industryList"></div>
+      </aside>
+
+      <main class="main-content" id="mainContent">
+        <!-- ━━━━ Home View ━━━━ -->
+        <div class="view-section active" id="view-home">
+          <div class="home-hero">
+            <h1>股票 是将<em>正确价值观</em>变现的最好工具</h1>
+            <p class="sub">抓住具备长期概率优势的机会 · 精准交易 · 提高赢面</p>
+          </div>
+
+          <div class="home-section">
+            <div class="home-section__title">📐 StockMind AI <span>两层概率框架</span></div>
+            <div class="framework-grid">
+              <div class="framework-card">
+                <div class="level">第一层面</div>
+                <h3>分析企业</h3>
+                <p>这家企业是否具备"长期上涨的潜力"？</p>
+                <div class="method">→ 通过筛选器筛选出可能长期上涨的个股和价值</div>
+              </div>
+              <div class="framework-card">
+                <div class="level">第二层面</div>
+                <h3>分析价格</h3>
+                <p>入场价格是否处于这只股票的"长期上涨初期"？</p>
+                <div class="method">→ 分析价格波动规律，过滤震荡期，抓准上涨阶梯</div>
+              </div>
+            </div>
+            <div class="framework-tagline">绝不会错过这些大机会</div>
+          </div>
+
+          <div class="home-section">
+            <div class="home-section__title">📈 实战案例 · 站长亲自操作</div>
+            <div class="cases-wrap">
+              <table class="cases-table">
+                <tr>
+                  <th>股票</th>
+                  <th>市场</th>
+                  <th>买入</th>
+                  <th>卖出</th>
+                  <th>盈亏</th>
+                  <th>核心逻辑</th>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">上海机场</div>
+                    <span class="stock-code">600009</span>
+                  </td>
+                  <td><span class="mkt-tag">A股</span></td>
+                  <td>
+                    <div class="date">2017-05-04</div>
+                    <div class="price">35.5￥</div>
+                  </td>
+                  <td>
+                    <div class="date">—</div>
+                    <div class="price">—</div>
+                  </td>
+                  <td><div class="profit negative">-100%*</div></td>
+                  <td><div class="logic">五年营收持续创新高，毛利高，盈利能力极强</div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">爱尔眼科</div>
+                    <span class="stock-code">300015</span>
+                  </td>
+                  <td><span class="mkt-tag">A股</span></td>
+                  <td>
+                    <div class="date">2017-11-03</div>
+                    <div class="price">19.5￥</div>
+                  </td>
+                  <td>
+                    <div class="date">—</div>
+                    <div class="price">—</div>
+                  </td>
+                  <td><div class="profit negative">-100%*</div></td>
+                  <td><div class="logic">医疗器械中业绩、盈利能力、经营能力均优异</div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">海天味业</div>
+                    <span class="stock-code">603288</span>
+                  </td>
+                  <td><span class="mkt-tag">A股</span></td>
+                  <td>
+                    <div class="date">2017-05-15</div>
+                    <div class="price">37￥</div>
+                  </td>
+                  <td>
+                    <div class="date">—</div>
+                    <div class="price">—</div>
+                  </td>
+                  <td><div class="profit negative">-100%*</div></td>
+                  <td><div class="logic">食品类企业经营/获利能力领先，五年持续增长</div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">伟星新材</div>
+                    <span class="stock-code">002372</span>
+                  </td>
+                  <td><span class="mkt-tag">A股</span></td>
+                  <td>
+                    <div class="date">2016-07-27</div>
+                    <div class="price">8.25￥</div>
+                  </td>
+                  <td>
+                    <div class="date">2018-09-12</div>
+                    <div class="price">13.98￥</div>
+                  </td>
+                  <td><div class="profit positive">+69.5%</div></td>
+                  <td><div class="logic">建材行业经营/获利能力最强，指标持续上升</div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">海康威视</div>
+                    <span class="stock-code">002415</span>
+                  </td>
+                  <td><span class="mkt-tag">A股</span></td>
+                  <td>
+                    <div class="date">2017-03-07</div>
+                    <div class="price">18.7￥</div>
+                  </td>
+                  <td>
+                    <div class="date">2018-02-06</div>
+                    <div class="price">35.3￥</div>
+                  </td>
+                  <td><div class="profit positive">+88.8%</div></td>
+                  <td><div class="logic">五年毛利/净利水平极高，增长持续迅速</div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">贵州茅台</div>
+                    <span class="stock-code">600519</span>
+                  </td>
+                  <td><span class="mkt-tag">A股</span></td>
+                  <td>
+                    <div class="date">2016-05-03</div>
+                    <div class="price">234￥</div>
+                  </td>
+                  <td>
+                    <div class="date">2018-08-20</div>
+                    <div class="price">627.6￥</div>
+                  </td>
+                  <td><div class="profit positive">+168.2%</div></td>
+                  <td><div class="logic">品牌溢价→毛利率极高，RoE 常年 25% 以上</div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">苹果 AAPL</div>
+                    <span class="stock-code"></span>
+                  </td>
+                  <td><span class="mkt-tag">美股</span></td>
+                  <td>
+                    <div class="date">2017-03-15</div>
+                    <div class="price">136.4$</div>
+                  </td>
+                  <td>
+                    <div class="date">2018-12-20</div>
+                    <div class="price">156.8$</div>
+                  </td>
+                  <td><div class="profit positive">+15.0%</div></td>
+                  <td><div class="logic">获利能力稳定强劲，股价长期看涨</div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="stock-name">苹果 AAPL</div>
+                    <span class="stock-code"></span>
+                  </td>
+                  <td><span class="mkt-tag">美股</span></td>
+                  <td>
+                    <div class="date">2014-05-19</div>
+                    <div class="price">76.88$</div>
+                  </td>
+                  <td>
+                    <div class="date">2015-08-24</div>
+                    <div class="price">114.2$</div>
+                  </td>
+                  <td><div class="profit positive">+23.4%</div></td>
+                  <td><div class="logic">2014-2015 年上涨主波操作案例</div></td>
+                </tr>
+              </table>
+            </div>
+            <div class="cases-note">
+              * 上海机场、爱尔眼科、海天味业显示当前价格 0 元/浮动盈亏
+              -100%，说明这些持仓在数据源停更后价格信息已丢失，并非实际亏损。
+            </div>
+          </div>
+
+          <div class="home-section">
+            <div class="philosophy-block">
+              概率思维，不仅是正确价值观的一部分，<br />更是最强大的<strong>赚钱变现工具</strong>。
+            </div>
+          </div>
+
+          <!-- ━━━━ AI 智能分析 ━━━━ -->
+          <div class="home-section" id="homeAiSection">
+            <div class="home-section__title">🤖 AI <span>智能分析</span></div>
+            <div class="ai-search-wrap">
+              <div class="ai-search-bar">
+                <input
+                  type="text"
+                  id="homeAiSearch"
+                  placeholder="输入股票代码或名称（如 600519 或 贵州茅台）"
+                  autocomplete="off"
+                />
+                <button class="ai-search-btn" id="homeAiSearchBtn">分析</button>
+              </div>
+              <div class="ai-search-hints">
+                热门分析：
+                <button class="ai-hint-tag" data-stock="贵州茅台">贵州茅台</button>
+                <button class="ai-hint-tag" data-stock="比亚迪">比亚迪</button>
+                <button class="ai-hint-tag" data-stock="招商银行">招商银行</button>
+                <button class="ai-hint-tag" data-stock="恒瑞医药">恒瑞医药</button>
+                <button class="ai-hint-tag" data-stock="宁德时代">宁德时代</button>
+              </div>
+              <div class="ai-result-area" id="homeAiResult"></div>
+            </div>
+          </div>
+
+          <div class="home-section">
+            <div class="home-section__title">🎯 课程 <span>三大价值</span></div>
+            <div class="value-grid">
+              <div class="value-card">
+                <span class="icon">🔍</span>
+                <h4>快速精准选择投资对象</h4>
+                <ul>
+                  <li>如何筛选出高概率的上涨潜力股？</li>
+                  <li>如何使用简单的财务知识分析企业？</li>
+                  <li>使用 StockMind AI 工具更快、更准确地确定目标</li>
+                </ul>
+              </div>
+              <div class="value-card">
+                <span class="icon">⚡</span>
+                <h4>交易过程中的细节处理</h4>
+                <ul>
+                  <li>高胜率的交易机会在哪里？</li>
+                  <li>为什么这些机会能让我们长期占有概率优势？</li>
+                  <li>交易机会来临时如何更准确地买进卖出？</li>
+                </ul>
+              </div>
+              <div class="value-card">
+                <span class="icon">🧘</span>
+                <h4>正确的投资交易姿态</h4>
+                <ul>
+                  <li>不要短线投机，不要高估短期回报</li>
+                  <li>判断正确很容易，难的是学会静静地等待</li>
+                  <li>不要天天看股价波动，每个月只看一次</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="home-section">
+            <div class="home-section__title">✍️ 站长自述</div>
+            <div class="story-block">
+              <div class="author-meta">
+                <div class="author-avatar">苏</div>
+                <div>
+                  <div class="author-name">Emile Su（大苏）— 作者 / 站长</div>
+                  <div class="author-tags">
+                    <span>10 年交易经历</span>
+                    <span>程序员 / 文案</span>
+                    <span>德扑高段位</span>
+                    <span>LOL / PUBG 玩家</span>
+                  </div>
+                </div>
+              </div>
+              <div class="quote-text">
+                <strong>毕业至今，我几乎不间断地做了近十年交易</strong
+                >（股票、外汇保证金等等）。而前面的五年，基本是亏多赢少，始终跨不过坎。——"如何判断正确？"
+                但恰恰相反，这几年我开始能持续稳定获利，并不是因为彻底解决了"如何判断正确？"这个问题，而是对交易这件事情在认知上的各方面转变。
+                我可以告诉你，<strong>判断正确有多简单</strong>，以至于没有复杂的技巧可言；在交易中更困难的是学会静静地等待，等待计划中的事情自己出现，自己去发展。
+                知道这些之后，你将可以牢牢抓住每次高胜率的机会。让投资交易成为改变你下半生的财富放大器。
+              </div>
+              <div class="quote-footer">
+                交易本身是最公平的。唯一不公平的，是交易者观念与认知的差距。
+              </div>
+            </div>
+          </div>
+
+          <div class="home-section">
+            <div class="home-section__title">❓ 常见问题</div>
+            <div class="faq-wrap">
+              <div class="faq-item">
+                <button
+                  class="faq-question"
+                  onclick="
+                    this.classList.toggle('open');
+                    this.nextElementSibling.classList.toggle('open');
+                  "
+                >
+                  适合什么人学习？ <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                  希望凭自己的智慧独立去做投资交易的人，一定会让你成为更好的自己。
+                </div>
+              </div>
+              <div class="faq-item">
+                <button
+                  class="faq-question"
+                  onclick="
+                    this.classList.toggle('open');
+                    this.nextElementSibling.classList.toggle('open');
+                  "
+                >
+                  会不会很难？ <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                  比想象的简单得多得多，但收获的大小取决于学习的耐心与诚心。
+                </div>
+              </div>
+              <div class="faq-item">
+                <button
+                  class="faq-question"
+                  onclick="
+                    this.classList.toggle('open');
+                    this.nextElementSibling.classList.toggle('open');
+                  "
+                >
+                  能学到什么？ <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                  成为一个专业的交易者所必备的素质。学习社区，一直持续更新内容。
+                </div>
+              </div>
+              <div class="faq-item">
+                <button
+                  class="faq-question"
+                  onclick="
+                    this.classList.toggle('open');
+                    this.nextElementSibling.classList.toggle('open');
+                  "
+                >
+                  有荐股群吗？ <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                  并没有！！不会开任何"每日荐股"、"牛股推荐"之类的 QQ 或微信群。
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="home-section">
+            <div class="home-section__title">💬 学员证言</div>
+            <div class="testimonial-grid">
+              <div class="testimonial-card">
+                <div class="avatar">皮</div>
+                <div class="name">皮孩儿</div>
+                <div class="bg">股票交易 5 年</div>
+              </div>
+              <div class="testimonial-card">
+                <div class="avatar">T</div>
+                <div class="name">Tongkong</div>
+                <div class="bg">交易新手，内测期会员</div>
+              </div>
+              <div class="testimonial-card">
+                <div class="avatar">莫</div>
+                <div class="name">莫文辉</div>
+                <div class="bg">股票 3 年，比特币半年</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="home-section">
+            <div class="cta-home">
+              <h3>开始学习</h3>
+              <p>StockMind AI 投资交易课 — 让你的认知变为财富</p>
+              <button class="btn" data-view="courses">前往课程 →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━ A 股 View ━━━━ -->
+        <div class="view-section" id="view-a-share">
+          <div class="top-bar">
+            <div class="top-bar__left">
+              <h1>A 股 · 财务数据筛选</h1>
+              <div class="sub" id="aShareSub">请从左侧选择一个行业</div>
+            </div>
+            <div class="top-bar__right">
+              <select class="filter-select" id="listingFilterA">
+                <option value="all">全部</option>
+                <option value="3y">已上市 3 年</option>
+                <option value="5y">已上市 5 年</option>
+              </select>
+              <span class="badge-member">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="2" y="7" width="12" height="8" rx="1" />
+                  <path d="M5 7V4a3 3 0 016 0v3" />
+                </svg>
+                会员
+              </span>
+            </div>
+          </div>
+          <div id="aShareMetrics"></div>
+        </div>
+
+        <!-- ━━━━ Pyramid View ━━━━ -->
+        <div class="view-section" id="view-pyramid">
+          <div class="pyramid-hero">
+            <h1>🔺 金字塔 · <span>上涨潜力排行榜</span></h1>
+            <p>基于 StockMind AI 独家价值投资评分体系，全市场股票综合排名</p>
+          </div>
+          <div class="pyramid-list" id="pyramidList"></div>
+        </div>
+
+        <!-- ━━━━ Contrast View ━━━━ -->
+        <div class="view-section" id="view-contrast">
+          <div class="pyramid-hero" style="padding-bottom: 16px">
+            <h1>⇆ 个股<span>对比</span></h1>
+            <p>选择多只股票，横向对比财务指标</p>
+          </div>
+          <div class="contrast-search" id="contrastSearch">
+            <input
+              type="text"
+              id="contrastInput"
+              placeholder="输入股票代码或名称..."
+              autocomplete="off"
+            />
+            <div id="contrastTags"></div>
+          </div>
+          <div id="contrastTableArea"></div>
+        </div>
+
+        <!-- ━━━━ Courses View ━━━━ -->
+        <div class="view-section" id="view-courses">
+          <div class="courses-hero">
+            <h1>📖 投资交易课 · <span>从零到稳定盈利</span></h1>
+            <p>站长"大苏"（Emile Su）将十年交易经验系统化整理的图文课程体系</p>
+          </div>
+
+          <div class="courses-notice">
+            <h3>📌 学习须知</h3>
+            <ul>
+              <li>
+                <strong>设备要求：</strong>必须用台式电脑阅读，不要用手机。课程会用到 StockMind AI
+                工具或股票软件做验证
+              </li>
+              <li>
+                <strong>学习态度：</strong>课程前请"暂且认为自己是个交易小白"，按顺序学习不跳步
+              </li>
+              <li>
+                <strong>两个要求：</strong>① 找对的方法（低风险、高胜率）；②
+                找到对的股票（长期上涨潜力）
+              </li>
+            </ul>
+          </div>
+
+          <div class="chapter-list">
+            <div class="chapter-item">
+              <div class="chapter-num special">P</div>
+              <div class="chapter-info">
+                <div class="chapter-title">前言 — 来自作者的一封信</div>
+                <div class="chapter-count">写给每一个想通过交易改变命运的人</div>
+              </div>
+              <span class="chapter-badge highlight">序言</span>
+            </div>
+            <div class="chapter-item">
+              <div class="chapter-num">1</div>
+              <div class="chapter-info">
+                <div class="chapter-title">投资交易的几个误区</div>
+                <div class="chapter-count">认清常见陷阱，避免走弯路</div>
+              </div>
+              <span class="chapter-badge">8 篇</span>
+            </div>
+            <div class="chapter-item">
+              <div class="chapter-num">2</div>
+              <div class="chapter-info">
+                <div class="chapter-title">寻找具备长期上涨潜力的股票</div>
+                <div class="chapter-count">财务数据——最高效客观的方法</div>
+              </div>
+              <span class="chapter-badge">17 篇</span>
+            </div>
+            <div class="chapter-item">
+              <div class="chapter-num">3</div>
+              <div class="chapter-info">
+                <div class="chapter-title">选股策略——快速筛选出潜力股</div>
+                <div class="chapter-count">系统化的选股框架，缩小标的范围</div>
+              </div>
+              <span class="chapter-badge">9 篇</span>
+            </div>
+            <div class="chapter-item">
+              <div class="chapter-num">4</div>
+              <div class="chapter-info">
+                <div class="chapter-title">寻找低风险、高胜率的交易时机</div>
+                <div class="chapter-count">安全、胜率、效率的统一</div>
+              </div>
+              <span class="chapter-badge">13 篇</span>
+            </div>
+            <div class="chapter-item">
+              <div class="chapter-num">5</div>
+              <div class="chapter-info">
+                <div class="chapter-title">交易管理——让规则来决定行动</div>
+                <div class="chapter-count">仓位管理、止损止盈、交易纪律</div>
+              </div>
+              <span class="chapter-badge">11 篇</span>
+            </div>
+            <div class="chapter-item">
+              <div class="chapter-num special">E</div>
+              <div class="chapter-info">
+                <div class="chapter-title">赚到钱，才是最终目的</div>
+                <div class="chapter-count">结语 — 从知识到行动，从行动到结果</div>
+              </div>
+              <span class="chapter-badge highlight">结语</span>
+            </div>
+          </div>
+
+          <div class="qa-section">
+            <h2>💬 会员专属问答 <span>2025.06.05 — 2025.06.14</span></h2>
+            <div class="qa-grid">
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 如何判断出场点？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 行业股怎么选？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 周期股的买卖逻辑
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 互联网公司如何估值？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 止损位怎么设？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 分红率重要吗？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 美股和A股差异？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 什么时候加仓？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 长期持有还是波段？
+              </button>
+              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
+                <span class="q">Q.</span> 如何控制回撤？
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━ About View ━━━━ -->
+        <div class="view-section" id="view-about">
+          <div class="about-wrap">
+            <div class="about-section">
+              <h2>📌 关于 StockMind AI</h2>
+              <p class="about-desc">
+                交易策略学习及工具网站，传播正确的价值投资观念及技巧。
+                适用于股票、区块链货币、外汇等金融交易。
+              </p>
+            </div>
+
+            <div class="about-section">
+              <h2>✍️ 作者 / 站长 — Emile Su（苏超鹏）</h2>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="year">2010</div>
+                  <p>
+                    第一只股票海螺水泥，两个月亏损
+                    <strong style="color: var(--red-text)">21%</strong>
+                  </p>
+                </div>
+                <div class="timeline-item">
+                  <div class="year">2012</div>
+                  <p>两年外汇保证金交易，尝试所有中短期方法</p>
+                </div>
+                <div class="timeline-item">
+                  <div class="year">2016 前</div>
+                  <p>亏多盈少，重新思考策略</p>
+                </div>
+                <div class="timeline-item">
+                  <div class="year">2016 起</div>
+                  <p>转变观念耐心等待，从伟星新材等多只股票持续获利</p>
+                </div>
+                <div class="timeline-item">
+                  <div class="year">2019.4 起</div>
+                  <p>
+                    曾供职 P2P 公司，老板 2016 年跑路。大苏因协助报案后被判
+                    <span class="highlight">7 年 9 个月</span>。
+                    服刑期间由"小瓶"和"黄同学"维护网站。目前具备假释条件，回归时间不确定。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-section">
+              <h2>⚙️ 网站技术栈</h2>
+              <div class="tech-tags">
+                <span class="tech-tag">Ruby on Rails</span>
+                <span class="tech-tag">Bootstrap 3</span>
+                <span class="tech-tag">MySQL</span>
+                <span class="tech-tag">Devise</span>
+                <span class="tech-tag">Kaminari</span>
+                <span class="tech-tag">OmniAuth</span>
+                <span class="tech-tag">微信登录</span>
+                <span class="tech-tag">GitHub登录</span>
+                <span class="tech-tag">Chartkick</span>
+                <span class="tech-tag">七牛云存储</span>
+                <span class="tech-tag">rest-client</span>
+                <span class="tech-tag">Nokogiri</span>
+                <span class="tech-tag">Sidekiq</span>
+                <span class="tech-tag">Figaro</span>
+                <span class="tech-tag">Impressionist</span>
+              </div>
+              <p style="margin-top: 10px; font-size: 13px; color: var(--text-tertiary)">
+                代码开源在 GitHub · 数据爬取使用 rest-client + Nokogiri
+              </p>
+            </div>
+
+            <div class="about-section">
+              <h2>📅 主要功能升级历史</h2>
+              <div class="version-table-wrap">
+                <table class="version-table">
+                  <tr>
+                    <th>版本</th>
+                    <th>时间</th>
+                    <th>核心功能</th>
+                  </tr>
+                  <tr>
+                    <td>beta</td>
+                    <td>2018.1-2</td>
+                    <td>A股数据爬取、财报数据整理、指标公式、StockMind AI 表</td>
+                  </tr>
+                  <tr>
+                    <td>V1</td>
+                    <td>2018.3</td>
+                    <td>自动补全搜索、图表、行业分类+指标排序、10年财报分析+季度同比、笔记</td>
+                  </tr>
+                  <tr>
+                    <td>V2</td>
+                    <td>2018.4</td>
+                    <td>个人中心、课程文案、微信登录、实时股价/市盈率/股息率、移动端自适应</td>
+                  </tr>
+                  <tr>
+                    <td>V3</td>
+                    <td>2018.5</td>
+                    <td>美股数据爬取、美股 StockMind AI 表、股票 VS 对比</td>
+                  </tr>
+                  <tr>
+                    <td>V4-V5</td>
+                    <td>2018.6-7</td>
+                    <td>交易历史、教程文案优化</td>
+                  </tr>
+                  <tr>
+                    <td>V6</td>
+                    <td>2018.9</td>
+                    <td>美股数据源更换（NASDAQ+Yahoo）、视频教学频道</td>
+                  </tr>
+                  <tr>
+                    <td>V7</td>
+                    <td>2018.10</td>
+                    <td>GitHub登录、SSL证书、金字塔上涨潜力算法模型、会员功能</td>
+                  </tr>
+                  <tr>
+                    <td>V8-V11</td>
+                    <td>2018.11-2019.3</td>
+                    <td>行业分类优化、会员计划、微信支付、手机端登录</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="about-section">
+              <h2>📬 联系我们</h2>
+              <div class="contact-list">
+                <div class="contact-item">
+                  <span class="label">邮箱</span><span class="value">emilesu@qq.com</span
+                  ><span class="note">商业/公关/出版/演讲</span>
+                </div>
+                <div class="contact-item">
+                  <span class="label">微信</span><span class="value">emilesu</span
+                  ><span class="note">仅限会员添加</span>
+                </div>
+                <div class="contact-item">
+                  <span class="label">B站</span><span class="value">emilesu</span
+                  ><span class="note">视频教程</span>
+                </div>
+                <div class="contact-item">
+                  <span class="label">GitHub</span><span class="value">StockMind AI</span
+                  ><span class="note">开源代码</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-section">
+              <h2>🔐 会员体系</h2>
+              <div class="member-card">
+                <h3>StockMind AI 会员计划</h3>
+                <div class="sub">一次付费，永久有效</div>
+                <div class="member-grid">
+                  <div class="member-field">
+                    <div class="label">价格</div>
+                    <div class="value">¥368 CNY / $60 USD</div>
+                  </div>
+                  <div class="member-field">
+                    <div class="label">期限</div>
+                    <div class="value">永久有效</div>
+                  </div>
+                  <div class="member-field">
+                    <div class="label">国内支付</div>
+                    <div class="value">微信扫码 / 微信红包</div>
+                  </div>
+                  <div class="member-field">
+                    <div class="label">海外支付</div>
+                    <div class="value">PayPal</div>
+                  </div>
+                </div>
+                <div class="member-benefits">
+                  <h4>会员权益</h4>
+                  <ul>
+                    <li>解锁全部投资交易课（含后续进阶课程）</li>
+                    <li>使用金字塔上涨潜力排行榜（A股+美股智能筛选排序）</li>
+                    <li>添加大苏个人微信，股票/投资问题随时咨询</li>
+                  </ul>
+                </div>
+                <div class="member-status-note">
+                  ⏸️ 新进阶课程、个人创业课、APP 开发等因大苏服刑暂停。 A
+                  股财报由小瓶维护更新，美股数据已停止更新。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/hold-le-data.js"></script>
+    <script src="js/hold-le-ui.js"></script>
+    <script src="js/hold-le-stock-modal.js"></script>
+    <script src="js/hold-le-ai-chat.js"></script>
+    <script src="js/hold-le-app.js"></script>
+  </body>
+</html>

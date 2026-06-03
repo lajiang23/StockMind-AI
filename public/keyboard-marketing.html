@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>键盘营销方案 · 工作站</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --bg: #0d0d0f;
+        --bg-card: #1a1a1e;
+        --bg-card-hover: #212126;
+        --border: #2a2a30;
+        --border-light: #35353d;
+        --text: #e8e8ed;
+        --text2: #9898a3;
+        --text3: #666673;
+        --accent: #6c5ce7;
+        --accent-light: #a29bfe;
+        --accent-glow: rgba(108, 92, 231, 0.12);
+        --green: #00d68f;
+        --green-bg: rgba(0, 214, 143, 0.08);
+        --orange: #ff9f43;
+        --orange-bg: rgba(255, 159, 67, 0.08);
+        --red: #ff6b6b;
+        --blue: #54a0ff;
+        --radius: 12px;
+        --radius-sm: 8px;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', 'Segoe UI Symbol',
+          'Segoe UI Emoji', 'PingFang SC', 'HarmonyOS Sans', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.7;
+      }
+      .container {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      /* Header */
+      .hero {
+        text-align: center;
+        padding: 40px 0 48px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+      }
+      .hero-icon {
+        font-size: 56px;
+        margin-bottom: 12px;
+      }
+      .hero h1 {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+      }
+      .hero h1 span {
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .hero p {
+        color: var(--text2);
+        font-size: 15px;
+      }
+      .hero-tags {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+      }
+      .tag {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 14px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .tag-accent {
+        background: var(--accent-glow);
+        color: var(--accent-light);
+        border: 1px solid rgba(108, 92, 231, 0.2);
+      }
+      .tag-green {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid rgba(0, 214, 143, 0.2);
+      }
+      .tag-orange {
+        background: var(--orange-bg);
+        color: var(--orange);
+        border: 1px solid rgba(255, 159, 67, 0.2);
+      }
+
+      /* Budget Banner */
+      .budget-banner {
+        background: linear-gradient(135deg, var(--accent-glow), transparent);
+        border: 1px solid rgba(108, 92, 231, 0.2);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+      }
+      .budget-banner .bb-num {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--accent-light);
+        line-height: 1;
+      }
+      .budget-banner .bb-text {
+        color: var(--text2);
+        font-size: 13px;
+      }
+      .budget-banner .bb-text strong {
+        color: var(--text);
+      }
+
+      /* Section */
+      .section {
+        margin-bottom: 40px;
+      }
+      .section-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .section-title .line {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* Cards */
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        margin-bottom: 12px;
+      }
+      .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .card-desc {
+        font-size: 13px;
+        color: var(--text2);
+        line-height: 1.7;
+      }
+
+      /* Grid */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 640px) {
+        .grid-2,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Plan table */
+      .plan-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .plan-table th {
+        text-align: left;
+        padding: 8px 12px;
+        color: var(--text3);
+        font-weight: 500;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      .plan-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text2);
+      }
+      .plan-table tr:hover td {
+        background: var(--bg-card-hover);
+      }
+      .plan-table .day-cell {
+        font-weight: 600;
+        color: var(--accent-light);
+      }
+      .plan-table .plat-dy {
+        color: var(--red);
+      }
+      .plan-table .plat-xhs {
+        color: var(--orange);
+      }
+
+      /* Pipeline */
+      .pipeline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin: 4px 0;
+      }
+      .pipe-step {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 6px 12px;
+        font-size: 11px;
+        color: var(--text2);
+        text-align: center;
+      }
+      .pipe-step.active {
+        border-color: var(--accent);
+        background: var(--accent-glow);
+        color: var(--accent-light);
+      }
+      .pipe-arrow {
+        color: var(--text3);
+        font-size: 14px;
+      }
+
+      /* Script card */
+      .script-card {
+        border-left: 3px solid;
+        padding-left: 16px;
+        margin-bottom: 12px;
+      }
+      .script-card.s1 {
+        border-color: var(--accent);
+      }
+      .script-card.s2 {
+        border-color: var(--green);
+      }
+      .script-card.s3 {
+        border-color: var(--orange);
+      }
+      .script-card .sc-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+      .script-card .sc-label.s1 {
+        color: var(--accent-light);
+      }
+      .script-card .sc-label.s2 {
+        color: var(--green);
+      }
+      .script-card .sc-label.s3 {
+        color: var(--orange);
+      }
+      .script-card .sc-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .script-card .sc-meta {
+        font-size: 11px;
+        color: var(--text3);
+        margin-bottom: 8px;
+      }
+      .script-card .sc-content {
+        font-size: 13px;
+        color: var(--text2);
+        line-height: 1.8;
+        white-space: pre-wrap;
+      }
+
+      /* XHS card */
+      .xhs-card {
+        margin-bottom: 12px;
+      }
+      .xhs-card .xhs-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .xhs-card .xhs-desc {
+        font-size: 13px;
+        color: var(--text2);
+      }
+      .xhs-card .xhs-hook {
+        font-size: 12px;
+        color: var(--accent-light);
+        margin-top: 4px;
+      }
+
+      /* Highlight box */
+      .highlight {
+        background: var(--accent-glow);
+        border: 1px solid rgba(108, 92, 231, 0.2);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--text);
+        margin: 6px 0;
+      }
+      .highlight code {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: var(--accent-light);
+      }
+
+      /* Metrics */
+      .metrics-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .metric {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 16px;
+        text-align: center;
+      }
+      .metric .num {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--accent-light);
+      }
+      .metric .lbl {
+        font-size: 11px;
+        color: var(--text3);
+        margin-top: 4px;
+      }
+
+      /* Back link */
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text3);
+        text-decoration: none;
+        font-size: 12px;
+        margin-bottom: 20px;
+        transition: color 0.2s;
+      }
+      .back-link:hover {
+        color: var(--accent-light);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/" class="back-link">← 返回工作站</a>
+
+      <div class="hero">
+        <div class="hero-icon">⌨️</div>
+        <h1><span>客制化机械键盘</span> · 营销执行方案</h1>
+        <p>针对 AI 编程用户的 30 元预算冷启动计划 · 小红书 + 抖音双渠道</p>
+        <div class="hero-tags">
+          <span class="tag tag-accent">预算 ¥30</span>
+          <span class="tag tag-green">小红书</span>
+          <span class="tag tag-orange">抖音</span>
+          <span class="tag tag-accent">AI编程用户</span>
+        </div>
+      </div>
+
+      <!-- 预算横幅 -->
+      <div class="budget-banner">
+        <div class="bb-num">¥30</div>
+        <div class="bb-text">
+          <strong>30 元不是买量预算，是内容模型的验证资金。</strong><br />
+          20 元抖音豆荚 + 10 元小红书薯条，目的是让系统给你的内容打上正确的标签 → 推给精准的 AI
+          编程人群。
+        </div>
+      </div>
+
+      <!-- 产品定位 -->
+      <div class="section">
+        <div class="section-title">一、产品定位 <span class="line"></span></div>
+        <div class="card" style="text-align: center; padding: 28px">
+          <div
+            style="font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px"
+          >
+            "AI 时代程序员的输入终端"
+          </div>
+          <div style="font-size: 13px; color: var(--text2)">
+            不是普通键盘，是一把为 AI 编程工作流优化的利器。
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">🎯 核心人群</div>
+            <div class="card-desc">
+              AI 编程用户 — Cursor/Copilot 重度使用者、提示词工程师、AI 应用开发者、Vim/IDE
+              快捷键依赖者
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">💡 差异化卖点</div>
+            <div class="card-desc">
+              不是"好看"的键盘，是"好用"的 AI 编程键盘。一键唤出 AI
+              助手、专属提示词快捷键、多设备切换。
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">💰 建议价格带</div>
+            <div class="card-desc">¥299–499（客制化入门价位，小红书用户能接受的决策成本）</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📢 核心信息</div>
+            <div class="card-desc">
+              "用 AI 写代码的人，配一把 AI 键盘"<br />"你的快捷键比别人少两步"
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 内容矩阵 -->
+      <div class="section">
+        <div class="section-title">二、抖音 · 3 条脚本 <span class="line"></span></div>
+        <div class="metrics-row">
+          <div class="metric">
+            <div class="num">15-30s</div>
+            <div class="lbl">视频时长</div>
+          </div>
+          <div class="metric">
+            <div class="num">¥20</div>
+            <div class="lbl">豆荚预算</div>
+          </div>
+          <div class="metric">
+            <div class="num">3条</div>
+            <div class="lbl">首周发布</div>
+          </div>
+        </div>
+
+        <div class="script-card s1">
+          <div class="sc-label s1">S1 · 好奇驱动型 · 15s</div>
+          <div class="sc-title">用 AI 写代码的人，需要一把 AI 键盘</div>
+          <div class="sc-meta">俯拍键盘 → 手指敲击 → AI 代码生成画面</div>
+          <div class="sc-content">
+            "用 AI 写代码的人，都该配一把 AI 键盘。不是机械键盘的噱头，是真正懂 Cursor
+            的输入方案。你敲的每个快捷键，都比别人少两步。这是我新配的 AI 编程利器。"
+          </div>
+        </div>
+
+        <div class="script-card s2">
+          <div class="sc-label s2">S2 · 痛点对比型 · 20s</div>
+          <div class="sc-title">普通键盘 vs 客制化键盘，效率差多少</div>
+          <div class="sc-meta">分屏对比：普通键盘 ↔ 客制化键盘敲同一段代码</div>
+          <div class="sc-content">
+            "程序员每天敲 8000 次键盘。左边是默认键位，右边是 AI
+            编程优化键位。多设备切换、长代码输入、AI 对话——键盘才是程序员真正的生产力工具。"
+          </div>
+        </div>
+
+        <div class="script-card s3">
+          <div class="sc-label s3">S3 · 开箱/上手型 · 30s</div>
+          <div class="sc-title">花 299 组了一把 AI 编程键盘</div>
+          <div class="sc-meta">开箱过程：配件、轴体、手感、桌面效果</div>
+          <div class="sc-content">
+            "花 299 组了一把 AI 编程键盘。键帽选了深空灰 +
+            代码符号定制键，手感选了线性轴，打字起飞。桌面摆拍一套出片，评论区问配置的我都回了。"
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">三、小红书 · 4 篇图文框架 <span class="line"></span></div>
+        <div class="metrics-row">
+          <div class="metric">
+            <div class="num">4篇</div>
+            <div class="lbl">首周发布</div>
+          </div>
+          <div class="metric">
+            <div class="num">¥10</div>
+            <div class="lbl">薯条预算</div>
+          </div>
+          <div class="metric">
+            <div class="num">图文</div>
+            <div class="lbl">内容形式</div>
+          </div>
+        </div>
+
+        <div class="xhs-card card">
+          <div class="xhs-title">① 教程贴 — AI 编程键盘应该怎么配？</div>
+          <div class="xhs-desc">
+            <strong>封面：</strong>键盘俯拍 + 代码背景<br /><strong>内容：</strong
+            >轴体推荐（编程用线性轴）、配列建议（75%/80%）、键帽材质对比<br /><strong
+              >关键词：</strong
+            >#AI编程 #程序员桌面 #客制化键盘
+          </div>
+          <div class="xhs-hook">🎣 评论区引导："你写代码用什么轴？"</div>
+        </div>
+
+        <div class="xhs-card card">
+          <div class="xhs-title">② 产品贴 — 299 配了一把 AI 编程专用键盘</div>
+          <div class="xhs-desc">
+            <strong>封面：</strong>产品精拍图（暗调、RGB 光效）<br /><strong>内容：</strong
+            >各配件购物清单、总花费明细、组装过程 4-6 图<br /><strong>关键词：</strong
+            >#客制化键盘入门 #程序员生产力
+          </div>
+          <div class="xhs-hook">🎣 评论区主动放清单链接</div>
+        </div>
+
+        <div class="xhs-card card">
+          <div class="xhs-title">③ 对比贴 — 换了 3 把键盘才找到最顺手的</div>
+          <div class="xhs-desc">
+            <strong>封面：</strong>三把键盘对比摆拍<br /><strong>内容：</strong>前两把为什么不合适 →
+            最终方案详解<br /><strong>关键词：</strong>#键盘测评 #程序员好物
+          </div>
+          <div class="xhs-hook">🎣 "猜猜哪把是我的主力键盘？"</div>
+        </div>
+
+        <div class="xhs-card card">
+          <div class="xhs-title">④ 场景贴 — 一周 AI 编程桌面合集</div>
+          <div class="xhs-desc">
+            <strong>封面：</strong>带有键盘的桌面美学图<br /><strong>内容：</strong>7
+            天不同角度、不同光线的键盘 + 桌面搭配<br /><strong>关键词：</strong>#desksetup #编程桌面
+            #桌搭
+          </div>
+          <div class="xhs-hook">🎣 "你的键盘在桌面排第几？"</div>
+        </div>
+      </div>
+
+      <!-- 转化链路 -->
+      <div class="section">
+        <div class="section-title">四、转化链路 <span class="line"></span></div>
+        <div class="card" style="overflow-x: auto">
+          <div class="pipeline">
+            <span class="pipe-step">小红书/抖音内容</span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step active">主页简介引导</span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step">私信"AI"</span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step">自动回复发链接</span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step">下单转化</span>
+          </div>
+          <div style="margin-top: 16px">
+            <div class="highlight">
+              <strong>简介话术：</strong><br />
+              「⌨️ AI 编程键盘配置清单 → 私信"AI"自动获取」<br /><br />
+              <strong>自动回复：</strong><br />
+              「这是 AI 编程键盘的推荐配置清单 💻<br />
+              包含：轴体、键帽、套件、键位设置方案<br />
+              需要购买链接或定制方案，直接告诉我需求～」
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 30元分配 -->
+      <div class="section">
+        <div class="section-title">五、预算分配 <span class="line"></span></div>
+        <div class="grid-3">
+          <div class="card" style="text-align: center">
+            <div style="font-size: 32px; font-weight: 800; color: var(--red)">¥20</div>
+            <div style="font-size: 13px; font-weight: 600; margin: 4px 0">抖音豆荚</div>
+            <div style="font-size: 11px; color: var(--text3)">
+              投自然流量最好的那条视频<br />选「主页访问」目标
+            </div>
+          </div>
+          <div class="card" style="text-align: center">
+            <div style="font-size: 32px; font-weight: 800; color: var(--orange)">¥10</div>
+            <div style="font-size: 13px; font-weight: 600; margin: 4px 0">小红书薯条</div>
+            <div style="font-size: 11px; color: var(--text3)">
+              加热互动最高的那篇笔记<br />选「私信咨询」目标
+            </div>
+          </div>
+          <div class="card" style="text-align: center; border-color: var(--green)">
+            <div style="font-size: 32px; font-weight: 800; color: var(--green)">¥0</div>
+            <div style="font-size: 13px; font-weight: 600; margin: 4px 0">内容成本</div>
+            <div style="font-size: 11px; color: var(--text3)">
+              全部自己拍摄制作<br />零成本内容杠杆
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 发布排期 -->
+      <div class="section">
+        <div class="section-title">六、发布排期 <span class="line"></span></div>
+        <div class="card" style="overflow-x: auto; padding: 16px">
+          <table class="plan-table">
+            <thead>
+              <tr>
+                <th>天</th>
+                <th>平台</th>
+                <th>内容</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="day-cell">D1</td>
+                <td class="plat-dy">抖音</td>
+                <td>S1 好奇驱动型 15s</td>
+                <td>自然流量</td>
+              </tr>
+              <tr>
+                <td class="day-cell">D2</td>
+                <td class="plat-xhs">小红书</td>
+                <td>教程贴：「AI 编程键盘怎么配」</td>
+                <td>自然流量</td>
+              </tr>
+              <tr>
+                <td class="day-cell">D3</td>
+                <td class="plat-dy">抖音</td>
+                <td>S2 痛点对比型 20s</td>
+                <td>自然流量</td>
+              </tr>
+              <tr>
+                <td class="day-cell">D4</td>
+                <td class="plat-xhs">小红书</td>
+                <td>产品贴：「299 配了一把」</td>
+                <td>自然流量</td>
+              </tr>
+              <tr>
+                <td class="day-cell">D5</td>
+                <td>📊 分析</td>
+                <td>看哪条数据最好</td>
+                <td>选一条投 ¥20 豆荚</td>
+              </tr>
+              <tr>
+                <td class="day-cell">D6</td>
+                <td class="plat-dy">抖音</td>
+                <td>S3 开箱/上手型 30s</td>
+                <td>自然流量</td>
+              </tr>
+              <tr>
+                <td class="day-cell">D7</td>
+                <td class="plat-xhs">小红书</td>
+                <td>对比贴 + 投流</td>
+                <td>投 ¥10 薯条</td>
+              </tr>
+              <tr>
+                <td class="day-cell">W2</td>
+                <td>双平台</td>
+                <td>场景贴 + 迭代</td>
+                <td>根据数据调整方向</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 子任务清单 -->
+      <div class="section">
+        <div class="section-title">七、执行清单 <span class="line"></span></div>
+        <div class="card">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border);
+              "
+            >
+              <span
+                style="
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 4px;
+                  border: 2px solid var(--text3);
+                  flex-shrink: 0;
+                "
+              ></span>
+              <span style="font-size: 13px">确认产品配置方案和定价策略</span>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border);
+              "
+            >
+              <span
+                style="
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 4px;
+                  border: 2px solid var(--text3);
+                  flex-shrink: 0;
+                "
+              ></span>
+              <span style="font-size: 13px">制作前 3 条抖音脚本 + 小红书图文框架</span>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border);
+              "
+            >
+              <span
+                style="
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 4px;
+                  border: 2px solid var(--text3);
+                  flex-shrink: 0;
+                "
+              ></span>
+              <span style="font-size: 13px">搭建转化链路（私信自动回复 / 落地页）</span>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border);
+              "
+            >
+              <span
+                style="
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 4px;
+                  border: 2px solid var(--text3);
+                  flex-shrink: 0;
+                "
+              ></span>
+              <span style="font-size: 13px">发布首批内容，30 元投流验证模型</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span
+                style="
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 4px;
+                  border: 2px solid var(--text3);
+                  flex-shrink: 0;
+                "
+              ></span>
+              <span style="font-size: 13px">根据数据反馈迭代内容方向</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
