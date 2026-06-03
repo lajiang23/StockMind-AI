@@ -116,40 +116,103 @@ async function fetchWithRetry(url, retries = 2) {
 // 行业列表 & 分类
 // ═══════════════════════════════════════════
 
-// 东方财富行业分类映射
+// 申万一级行业分类（ 31 个）
+// 每个行业保留 legacy m:90+t:N 格式作为兜底，
+// discoverIndustries() 启动时会尝试获取东方财富 BK 板块代码，
+// 获取成功后切换为 b:BKXXXX 格式（沪深全市场）。
 const EASTMONEY_INDUSTRIES = {
-  bank: { name: '银行', t: '2', m: '90' },
-  transport: { name: '交通运输', t: '3', m: '90' },
-  auto: { name: '汽车', t: '4', m: '90' },
-  realestate: { name: '房地产', t: '5', m: '90' },
-  env: { name: '环保', t: '6', m: '90' },
-  steel: { name: '钢铁', t: '7', m: '90' },
-  utility: { name: '公用事业', t: '8', m: '90' },
-  petro: { name: '石油石化', t: '9', m: '90' },
-  finance: { name: '非银金融', t: '10', m: '90' },
-  machinery: { name: '机械设备', t: '11', m: '90' },
-  media: { name: '传媒', t: '12', m: '90' },
-  defense: { name: '国防军工', t: '13', m: '90' },
-  construction: { name: '建筑装饰', t: '14', m: '90' },
-  composite: { name: '综合', t: '15', m: '90' },
-  social: { name: '社会服务', t: '16', m: '90' },
-  pharma: { name: '医药生物', t: '17', m: '90' },
-  retail: { name: '商贸零售', t: '18', m: '90' },
-  food: { name: '食品饮料', t: '19', m: '90' },
-  appliance: { name: '家用电器', t: '20', m: '90' },
-  chemical: { name: '基础化工', t: '21', m: '90' },
-  lightind: { name: '轻工制造', t: '22', m: '90' },
-  elecequip: { name: '电力设备', t: '23', m: '90' },
-  agri: { name: '农林牧渔', t: '24', m: '90' },
-  computer: { name: '计算机', t: '25', m: '90' },
-  telecom: { name: '通信', t: '26', m: '90' },
-  textile: { name: '纺织服饰', t: '27', m: '90' },
-  metal: { name: '有色金属', t: '28', m: '90' },
-  coal: { name: '煤炭', t: '29', m: '90' },
-  electron: { name: '电子', t: '30', m: '90' },
-  building: { name: '建筑材料', t: '31', m: '90' },
-  beauty: { name: '美容护理', t: '32', m: '90' },
+  bank: { name: '银行', t: '2', m: '90', bk: null },
+  transport: { name: '交通运输', t: '3', m: '90', bk: null },
+  auto: { name: '汽车', t: '4', m: '90', bk: null },
+  realestate: { name: '房地产', t: '5', m: '90', bk: null },
+  env: { name: '环保', t: '6', m: '90', bk: null },
+  steel: { name: '钢铁', t: '7', m: '90', bk: null },
+  utility: { name: '公用事业', t: '8', m: '90', bk: null },
+  petro: { name: '石油石化', t: '9', m: '90', bk: null },
+  finance: { name: '非银金融', t: '10', m: '90', bk: null },
+  machinery: { name: '机械设备', t: '11', m: '90', bk: null },
+  media: { name: '传媒', t: '12', m: '90', bk: null },
+  defense: { name: '国防军工', t: '13', m: '90', bk: null },
+  construction: { name: '建筑装饰', t: '14', m: '90', bk: null },
+  composite: { name: '综合', t: '15', m: '90', bk: null },
+  social: { name: '社会服务', t: '16', m: '90', bk: null },
+  pharma: { name: '医药生物', t: '17', m: '90', bk: null },
+  retail: { name: '商贸零售', t: '18', m: '90', bk: null },
+  food: { name: '食品饮料', t: '19', m: '90', bk: null },
+  appliance: { name: '家用电器', t: '20', m: '90', bk: null },
+  chemical: { name: '基础化工', t: '21', m: '90', bk: null },
+  lightind: { name: '轻工制造', t: '22', m: '90', bk: null },
+  elecequip: { name: '电力设备', t: '23', m: '90', bk: null },
+  agri: { name: '农林牧渔', t: '24', m: '90', bk: null },
+  computer: { name: '计算机', t: '25', m: '90', bk: null },
+  telecom: { name: '通信', t: '26', m: '90', bk: null },
+  textile: { name: '纺织服饰', t: '27', m: '90', bk: null },
+  metal: { name: '有色金属', t: '28', m: '90', bk: null },
+  coal: { name: '煤炭', t: '29', m: '90', bk: null },
+  electron: { name: '电子', t: '30', m: '90', bk: null },
+  building: { name: '建筑材料', t: '31', m: '90', bk: null },
+  beauty: { name: '美容护理', t: '32', m: '90', bk: null },
 };
+
+/**
+ * 启动时尝试从东方财富获取行业板块列表（ BK 代码）
+ * URL: push2.eastmoney.com/api/qt/clist/get?fs=m:90+t:2+f:!50
+ * 返回所有行业板块的 BK 代码及名称，通过与本地行业名匹配来更新 bk 字段。
+ */
+async function discoverIndustries() {
+  try {
+    const url =
+      'https://push2.eastmoney.com/api/qt/clist/get' +
+      '?pn=1&pz=200&po=1&np=1&fltt=2&invt=2' +
+      '&fs=m:90+t:2+f:!50&fields=f12,f14&fid=f3';
+    const res = await fetchWithRetry(url);
+    const items = res?.data?.diff || [];
+    if (!items.length) {
+      console.warn('[eastmoney] 行业板块列表为空');
+      return false;
+    }
+
+    // 建立东方财富板块名称 → BK 代码的映射
+    const boardMap = new Map();
+    for (const item of items) {
+      const bkCode = String(item.f12 || '');
+      const boardName = (item.f14 || '').trim();
+      if (bkCode && boardName) {
+        boardMap.set(boardName, bkCode);
+      }
+    }
+
+    // 用本地行业名称匹配东方财富板块名称
+    let matched = 0;
+    for (const [key, ind] of Object.entries(EASTMONEY_INDUSTRIES)) {
+      // 精确匹配
+      if (boardMap.has(ind.name)) {
+        ind.bk = boardMap.get(ind.name);
+        matched++;
+        continue;
+      }
+      // 模糊匹配：行业名包含在板块名中（如 "银行" 可能匹配 "银行"）
+      for (const [boardName, bkCode] of boardMap) {
+        if (boardName.includes(ind.name) || ind.name.includes(boardName)) {
+          ind.bk = bkCode;
+          matched++;
+          break;
+        }
+      }
+    }
+
+    console.log(
+      `[eastmoney] 行业板块发现完成：匹配 ${matched}/${Object.keys(EASTMONEY_INDUSTRIES).length} 个行业`
+    );
+    return true;
+  } catch (err) {
+    console.warn(`[eastmoney] 行业板块发现失败（不影响运行，将使用 legacy 筛选）: ${err.message}`);
+    return false;
+  }
+}
+
+// 模块加载时自动尝试发现
+discoverIndustries();
 
 // ═══════════════════════════════════════════
 // 东方财富 API 字段说明
@@ -189,10 +252,11 @@ async function fetchStocksByIndustry(industryId, pageSize = 300) {
     'f12,f14,f2,f3,f4,f15,f16,f17,f18,f20,f21,f23,f25,f37,f38,f45,f46,f62,f100,f115,f152,f153,f168,f169,f170,f171,f184';
 
   try {
+    const fs = ind.bk ? `b:${ind.bk}+f:!50` : `m:${ind.m}+t:${ind.t}`;
     const url =
       `https://push2.eastmoney.com/api/qt/clist/get` +
       `?pn=1&pz=${pageSize}&po=1&np=1&fltt=2&invt=2` +
-      `&fs=m:${ind.m}+t:${ind.t}&fields=${fields}&fid=f3`;
+      `&fs=${fs}&fields=${fields}&fid=f3`;
 
     const res = await fetchWithRetry(url);
     const items = res?.data?.diff || [];
@@ -257,10 +321,11 @@ async function fetchStocksByIndustryFallback(industryId, pageSize) {
 
   try {
     const fields = 'f12,f14,f2,f3,f20,f23,f25,f62,f100,f115,f152,f153,f170,f184';
+    const fs = ind.bk ? `b:${ind.bk}+f:!50` : `m:${ind.m}+t:${ind.t}`;
     const url =
       `https://push2.eastmoney.com/api/qt/clist/get` +
       `?pn=1&pz=${pageSize}&po=1&np=1&fltt=2&invt=2` +
-      `&fs=m:${ind.m}+t:${ind.t}&fields=${fields}&fid=f3`;
+      `&fs=${fs}&fields=${fields}&fid=f3`;
 
     const res = await fetchWithRetry(url);
     const items = res?.data?.diff || [];
@@ -574,6 +639,7 @@ async function fetchMarketOverview() {
 // ═══════════════════════════════════════════
 
 module.exports = {
+  discoverIndustries,
   fetchStocksByIndustry,
   fetchQuote,
   fetchFinancialData,
