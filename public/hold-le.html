@@ -21,6 +21,7 @@
 
       <ul class="navbar__links">
         <li><button class="navbar__link active" data-view="home">首页</button></li>
+        <li><button class="navbar__link" data-view="courses">交易课</button></li>
         <li class="dropdown" id="filterDropdown">
           <button class="dropdown__trigger">
             筛选器
@@ -43,17 +44,8 @@
                 <span class="sub">上涨潜力排行榜</span>
               </div>
             </button>
-            <button class="dropdown__item" data-view="contrast">
-              <span class="icon">⇆</span>
-              <div>
-                对比
-                <span class="sub">个股对比工具</span>
-              </div>
-            </button>
           </div>
         </li>
-
-        <li><button class="navbar__link" data-view="courses">交易课</button></li>
         <li><button class="navbar__link" data-view="about">关于</button></li>
       </ul>
 
@@ -77,6 +69,26 @@
           autocomplete="off"
         />
       </div>
+
+      <!-- ─── 登录按钮 / 用户菜单 ─── -->
+      <div class="navbar__auth" id="navbarAuth">
+        <button class="auth-btn" id="loginBtn" onclick="openLoginModal()">登录</button>
+        <div class="user-menu hidden" id="userMenu">
+          <img class="user-avatar" id="userAvatar" src="" alt="" />
+          <span class="user-name" id="userName"></span>
+          <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown__info">
+              <div class="user-dropdown__name" id="userDropdownName"></div>
+              <div class="user-dropdown__status" id="userDropdownStatus">免费用户</div>
+            </div>
+            <div class="user-dropdown__divider"></div>
+            <div class="user-dropdown__item" id="upgradeBtn" onclick="openUpgradeModal()">
+              升级为会员
+            </div>
+            <div class="user-dropdown__item" onclick="handleLogout()">退出登录</div>
+          </div>
+        </div>
+      </div>
     </nav>
 
     <!-- ═══════════════════════════════════════════
@@ -99,188 +111,154 @@
         <!-- ━━━━ Home View ━━━━ -->
         <div class="view-section active" id="view-home">
           <div class="home-hero">
-            <h1>股票 是将<em>正确价值观</em>变现的最好工具</h1>
-            <p class="sub">抓住具备长期概率优势的机会 · 精准交易 · 提高赢面</p>
+            <h1>A 股巨变时代，为什么<em>小白更需要 AI</em></h1>
+            <p class="sub">信息爆炸、波动加剧、机构碾压 —— 借助 AI 打破信息差，让数据替你说话</p>
           </div>
 
+          <!-- ━━━━ 散户困境 ━━━━ -->
           <div class="home-section">
-            <div class="home-section__title">📐 StockMind AI <span>两层概率框架</span></div>
+            <div class="home-section__title">⚠️ 当前 A 股市场，<span>散户面临的四大困境</span></div>
             <div class="framework-grid">
               <div class="framework-card">
-                <div class="level">第一层面</div>
-                <h3>分析企业</h3>
-                <p>这家企业是否具备"长期上涨的潜力"？</p>
-                <div class="method">→ 通过筛选器筛选出可能长期上涨的个股和价值</div>
+                <div class="level">困境一</div>
+                <h3>信息严重不对称</h3>
+                <p>
+                  机构拥有调研团队、行业数据库、上市公司路演资源，而散户只能看二手新闻和社交媒体的噪音。
+                </p>
+                <div class="method">→ AI 能 7×24 小时跟踪全市场数据，帮你过滤噪音</div>
               </div>
               <div class="framework-card">
-                <div class="level">第二层面</div>
-                <h3>分析价格</h3>
-                <p>入场价格是否处于这只股票的"长期上涨初期"？</p>
-                <div class="method">→ 分析价格波动规律，过滤震荡期，抓准上涨阶梯</div>
+                <div class="level">困境二</div>
+                <h3>情绪化剧烈波动</h3>
+                <p>
+                  A
+                  股散户占比高，政策面和资金面扰动频繁，暴涨暴跌成为常态。缺乏客观判断工具，容易追涨杀跌。
+                </p>
+                <div class="method">→ AI 提供客观的财务和估值分析，不被市场情绪左右</div>
+              </div>
+              <div class="framework-card">
+                <div class="level">困境三</div>
+                <h3>认知偏差无处不在</h3>
+                <p>
+                  幸存者偏差（只看到赚到的人）、锚定效应（被买入价绑架）、过度自信 ——
+                  这些是人性的弱点，不是你的错。
+                </p>
+                <div class="method">→ AI 没有情绪，只有数据和逻辑，帮你对抗认知偏差</div>
+              </div>
+              <div class="framework-card">
+                <div class="level">困境四</div>
+                <h3>精力有限，股票太多</h3>
+                <p>
+                  A 股 5000+
+                  只股票，一个人盯不过来。不仅要看财务数据，还要跟踪行业动态、资金流向、政策变化。
+                </p>
+                <div class="method">→ AI 一键扫描全市场，快速定位值得深挖的标的</div>
               </div>
             </div>
-            <div class="framework-tagline">绝不会错过这些大机会</div>
           </div>
 
+          <!-- ━━━━ AI 破局 ━━━━ -->
           <div class="home-section">
-            <div class="home-section__title">📈 实战案例 · 站长亲自操作</div>
+            <div class="home-section__title">🤖 AI 如何帮散户<span>破局</span></div>
+            <div class="value-grid">
+              <div class="value-card">
+                <span class="icon">📊</span>
+                <h4>自动化财务分析</h4>
+                <p class="value-desc">
+                  不需要成为财务专家。输入股票代码，AI 自动提取
+                  PE、PB、RoE、毛利率、净利率等核心指标，并给出通俗解读。
+                </p>
+              </div>
+              <div class="value-card">
+                <span class="icon">🧠</span>
+                <h4>AI 智能问答</h4>
+                <p class="value-desc">
+                  不明白什么是"市净率"？不知道 DCF 估值怎么算？直接问
+                  AI，用大白话给你讲清楚，比翻书快 10 倍。
+                </p>
+              </div>
+              <div class="value-card">
+                <span class="icon">🔍</span>
+                <h4>全市场筛选</h4>
+                <p class="value-desc">
+                  从 5000+
+                  股票中快速筛选出符合你标准的标的，横向对比财务指标，把精力花在最有潜力的股票上。
+                </p>
+              </div>
+              <div class="value-card">
+                <span class="icon">📈</span>
+                <h4>多维度评分体系</h4>
+                <p class="value-desc">
+                  金字塔评分从财务健康、估值合理性、市场情绪等多维度综合打分，避免单一指标的片面判断。
+                </p>
+              </div>
+            </div>
+            <div class="framework-tagline">AI 不会替你决策，但能让你做出更明智的决策</div>
+          </div>
+
+          <!-- ━━━━ A 股 vs 美股 对比 ━━━━ -->
+          <div class="home-section">
+            <div class="home-section__title">🌏 A 股 vs 美股 <span>关键差异对比</span></div>
+            <div class="compare-intro">
+              很多新手问：到底是做 A
+              股还是做美股？两者从基因上就完全不同。理解这些差异，才能选择适合自己的战场。
+            </div>
             <div class="cases-wrap">
-              <table class="cases-table">
+              <table class="cases-table compare-table">
                 <tr>
-                  <th>股票</th>
-                  <th>市场</th>
-                  <th>买入</th>
-                  <th>卖出</th>
-                  <th>盈亏</th>
-                  <th>核心逻辑</th>
+                  <th style="width: 22%">对比维度</th>
+                  <th style="width: 39%">🇨🇳 A 股</th>
+                  <th style="width: 39%">🇺🇸 美股</th>
                 </tr>
                 <tr>
-                  <td>
-                    <div class="stock-name">上海机场</div>
-                    <span class="stock-code">600009</span>
-                  </td>
-                  <td><span class="mkt-tag">A股</span></td>
-                  <td>
-                    <div class="date">2017-05-04</div>
-                    <div class="price">35.5￥</div>
-                  </td>
-                  <td>
-                    <div class="date">—</div>
-                    <div class="price">—</div>
-                  </td>
-                  <td><div class="profit negative">-100%*</div></td>
-                  <td><div class="logic">五年营收持续创新高，毛利高，盈利能力极强</div></td>
+                  <td><div class="stock-name">市场历史</div></td>
+                  <td>1990 年上交所成立，仅 30 多年历史，仍在快速发展中</td>
+                  <td>1792 年纽交所成立，200+ 年历史，全球最成熟的资本市场</td>
                 </tr>
                 <tr>
-                  <td>
-                    <div class="stock-name">爱尔眼科</div>
-                    <span class="stock-code">300015</span>
-                  </td>
-                  <td><span class="mkt-tag">A股</span></td>
-                  <td>
-                    <div class="date">2017-11-03</div>
-                    <div class="price">19.5￥</div>
-                  </td>
-                  <td>
-                    <div class="date">—</div>
-                    <div class="price">—</div>
-                  </td>
-                  <td><div class="profit negative">-100%*</div></td>
-                  <td><div class="logic">医疗器械中业绩、盈利能力、经营能力均优异</div></td>
+                  <td><div class="stock-name">投资者结构</div></td>
+                  <td>散户交易占比约 60-70%，情绪化波动大，羊群效应明显</td>
+                  <td>机构占比 90%+，专业投资者主导，市场定价效率高</td>
                 </tr>
                 <tr>
-                  <td>
-                    <div class="stock-name">海天味业</div>
-                    <span class="stock-code">603288</span>
-                  </td>
-                  <td><span class="mkt-tag">A股</span></td>
-                  <td>
-                    <div class="date">2017-05-15</div>
-                    <div class="price">37￥</div>
-                  </td>
-                  <td>
-                    <div class="date">—</div>
-                    <div class="price">—</div>
-                  </td>
-                  <td><div class="profit negative">-100%*</div></td>
-                  <td><div class="logic">食品类企业经营/获利能力领先，五年持续增长</div></td>
+                  <td><div class="stock-name">交易制度</div></td>
+                  <td>T+1 交割，涨跌幅 ±10%（创业板/科创板 ±20%），有停牌机制</td>
+                  <td>T+0 交易，无涨跌幅限制，做多做空机制完善</td>
                 </tr>
                 <tr>
-                  <td>
-                    <div class="stock-name">伟星新材</div>
-                    <span class="stock-code">002372</span>
-                  </td>
-                  <td><span class="mkt-tag">A股</span></td>
-                  <td>
-                    <div class="date">2016-07-27</div>
-                    <div class="price">8.25￥</div>
-                  </td>
-                  <td>
-                    <div class="date">2018-09-12</div>
-                    <div class="price">13.98￥</div>
-                  </td>
-                  <td><div class="profit positive">+69.5%</div></td>
-                  <td><div class="logic">建材行业经营/获利能力最强，指标持续上升</div></td>
+                  <td><div class="stock-name">波动率</div></td>
+                  <td>年化波动率约 25-30%，暴涨暴跌更常见，政策驱动特征显著</td>
+                  <td>年化波动率约 15-20%，走势相对平稳，企业盈利驱动为主</td>
                 </tr>
                 <tr>
-                  <td>
-                    <div class="stock-name">海康威视</div>
-                    <span class="stock-code">002415</span>
-                  </td>
-                  <td><span class="mkt-tag">A股</span></td>
-                  <td>
-                    <div class="date">2017-03-07</div>
-                    <div class="price">18.7￥</div>
-                  </td>
-                  <td>
-                    <div class="date">2018-02-06</div>
-                    <div class="price">35.3￥</div>
-                  </td>
-                  <td><div class="profit positive">+88.8%</div></td>
-                  <td><div class="logic">五年毛利/净利水平极高，增长持续迅速</div></td>
+                  <td><div class="stock-name">信息披露</div></td>
+                  <td>证监会强制披露，但财务造假时有发生，信息透明度较弱</td>
+                  <td>SEC 严格监管，集体诉讼制度成熟，造假成本极高</td>
                 </tr>
                 <tr>
-                  <td>
-                    <div class="stock-name">贵州茅台</div>
-                    <span class="stock-code">600519</span>
-                  </td>
-                  <td><span class="mkt-tag">A股</span></td>
-                  <td>
-                    <div class="date">2016-05-03</div>
-                    <div class="price">234￥</div>
-                  </td>
-                  <td>
-                    <div class="date">2018-08-20</div>
-                    <div class="price">627.6￥</div>
-                  </td>
-                  <td><div class="profit positive">+168.2%</div></td>
-                  <td><div class="logic">品牌溢价→毛利率极高，RoE 常年 25% 以上</div></td>
+                  <td><div class="stock-name">退市机制</div></td>
+                  <td>退市率低（年均 < 1%），壳资源仍有价值，"不死鸟"现象</td>
+                  <td>退市率高（年均 6-8%），市场化优胜劣汰，垃圾股快速出清</td>
                 </tr>
                 <tr>
-                  <td>
-                    <div class="stock-name">苹果 AAPL</div>
-                    <span class="stock-code"></span>
-                  </td>
-                  <td><span class="mkt-tag">美股</span></td>
-                  <td>
-                    <div class="date">2017-03-15</div>
-                    <div class="price">136.4$</div>
-                  </td>
-                  <td>
-                    <div class="date">2018-12-20</div>
-                    <div class="price">156.8$</div>
-                  </td>
-                  <td><div class="profit positive">+15.0%</div></td>
-                  <td><div class="logic">获利能力稳定强劲，股价长期看涨</div></td>
+                  <td><div class="stock-name">投资理念</div></td>
+                  <td>偏好趋势博弈和政策题材炒作，换手率高（年均 200-400%）</td>
+                  <td>价值投资和成长投资为主流，长期持有策略更普遍（年均换手率 100-150%）</td>
                 </tr>
                 <tr>
+                  <td><div class="stock-name">对散户友好度</div></td>
+                  <td>门槛低、无语言障碍、但对分析能力要求高，信息差带来的劣势大</td>
                   <td>
-                    <div class="stock-name">苹果 AAPL</div>
-                    <span class="stock-code"></span>
+                    有汇率和语言门槛，但工具丰富（Yahoo Finance 等），ETF 选择多，适合被动投资
                   </td>
-                  <td><span class="mkt-tag">美股</span></td>
-                  <td>
-                    <div class="date">2014-05-19</div>
-                    <div class="price">76.88$</div>
-                  </td>
-                  <td>
-                    <div class="date">2015-08-24</div>
-                    <div class="price">114.2$</div>
-                  </td>
-                  <td><div class="profit positive">+23.4%</div></td>
-                  <td><div class="logic">2014-2015 年上涨主波操作案例</div></td>
                 </tr>
               </table>
             </div>
-            <div class="cases-note">
-              * 上海机场、爱尔眼科、海天味业显示当前价格 0 元/浮动盈亏
-              -100%，说明这些持仓在数据源停更后价格信息已丢失，并非实际亏损。
-            </div>
-          </div>
-
-          <div class="home-section">
-            <div class="philosophy-block">
-              概率思维，不仅是正确价值观的一部分，<br />更是最强大的<strong>赚钱变现工具</strong>。
+            <div class="compare-summary">
+              <strong>核心结论：</strong>A 股波动大但机会也多，适合能利用工具（如
+              AI）和信息优势的主动投资者；美股更成熟稳定，适合长期持有的价值投资者。无论选哪个市场，<strong
+                >用 AI 辅助分析都是降低信息差的最有效手段</strong
+              >。
             </div>
           </div>
 
@@ -310,154 +288,12 @@
           </div>
 
           <div class="home-section">
-            <div class="home-section__title">🎯 课程 <span>三大价值</span></div>
-            <div class="value-grid">
-              <div class="value-card">
-                <span class="icon">🔍</span>
-                <h4>快速精准选择投资对象</h4>
-                <ul>
-                  <li>如何筛选出高概率的上涨潜力股？</li>
-                  <li>如何使用简单的财务知识分析企业？</li>
-                  <li>使用 StockMind AI 工具更快、更准确地确定目标</li>
-                </ul>
-              </div>
-              <div class="value-card">
-                <span class="icon">⚡</span>
-                <h4>交易过程中的细节处理</h4>
-                <ul>
-                  <li>高胜率的交易机会在哪里？</li>
-                  <li>为什么这些机会能让我们长期占有概率优势？</li>
-                  <li>交易机会来临时如何更准确地买进卖出？</li>
-                </ul>
-              </div>
-              <div class="value-card">
-                <span class="icon">🧘</span>
-                <h4>正确的投资交易姿态</h4>
-                <ul>
-                  <li>不要短线投机，不要高估短期回报</li>
-                  <li>判断正确很容易，难的是学会静静地等待</li>
-                  <li>不要天天看股价波动，每个月只看一次</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="home-section">
-            <div class="home-section__title">✍️ 站长自述</div>
-            <div class="story-block">
-              <div class="author-meta">
-                <div class="author-avatar">苏</div>
-                <div>
-                  <div class="author-name">Emile Su（大苏）— 作者 / 站长</div>
-                  <div class="author-tags">
-                    <span>10 年交易经历</span>
-                    <span>程序员 / 文案</span>
-                    <span>德扑高段位</span>
-                    <span>LOL / PUBG 玩家</span>
-                  </div>
-                </div>
-              </div>
-              <div class="quote-text">
-                <strong>毕业至今，我几乎不间断地做了近十年交易</strong
-                >（股票、外汇保证金等等）。而前面的五年，基本是亏多赢少，始终跨不过坎。——"如何判断正确？"
-                但恰恰相反，这几年我开始能持续稳定获利，并不是因为彻底解决了"如何判断正确？"这个问题，而是对交易这件事情在认知上的各方面转变。
-                我可以告诉你，<strong>判断正确有多简单</strong>，以至于没有复杂的技巧可言；在交易中更困难的是学会静静地等待，等待计划中的事情自己出现，自己去发展。
-                知道这些之后，你将可以牢牢抓住每次高胜率的机会。让投资交易成为改变你下半生的财富放大器。
-              </div>
-              <div class="quote-footer">
-                交易本身是最公平的。唯一不公平的，是交易者观念与认知的差距。
-              </div>
-            </div>
-          </div>
-
-          <div class="home-section">
-            <div class="home-section__title">❓ 常见问题</div>
-            <div class="faq-wrap">
-              <div class="faq-item">
-                <button
-                  class="faq-question"
-                  onclick="
-                    this.classList.toggle('open');
-                    this.nextElementSibling.classList.toggle('open');
-                  "
-                >
-                  适合什么人学习？ <span class="arrow">▼</span>
-                </button>
-                <div class="faq-answer">
-                  希望凭自己的智慧独立去做投资交易的人，一定会让你成为更好的自己。
-                </div>
-              </div>
-              <div class="faq-item">
-                <button
-                  class="faq-question"
-                  onclick="
-                    this.classList.toggle('open');
-                    this.nextElementSibling.classList.toggle('open');
-                  "
-                >
-                  会不会很难？ <span class="arrow">▼</span>
-                </button>
-                <div class="faq-answer">
-                  比想象的简单得多得多，但收获的大小取决于学习的耐心与诚心。
-                </div>
-              </div>
-              <div class="faq-item">
-                <button
-                  class="faq-question"
-                  onclick="
-                    this.classList.toggle('open');
-                    this.nextElementSibling.classList.toggle('open');
-                  "
-                >
-                  能学到什么？ <span class="arrow">▼</span>
-                </button>
-                <div class="faq-answer">
-                  成为一个专业的交易者所必备的素质。学习社区，一直持续更新内容。
-                </div>
-              </div>
-              <div class="faq-item">
-                <button
-                  class="faq-question"
-                  onclick="
-                    this.classList.toggle('open');
-                    this.nextElementSibling.classList.toggle('open');
-                  "
-                >
-                  有荐股群吗？ <span class="arrow">▼</span>
-                </button>
-                <div class="faq-answer">
-                  并没有！！不会开任何"每日荐股"、"牛股推荐"之类的 QQ 或微信群。
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="home-section">
-            <div class="home-section__title">💬 学员证言</div>
-            <div class="testimonial-grid">
-              <div class="testimonial-card">
-                <div class="avatar">皮</div>
-                <div class="name">皮孩儿</div>
-                <div class="bg">股票交易 5 年</div>
-              </div>
-              <div class="testimonial-card">
-                <div class="avatar">T</div>
-                <div class="name">Tongkong</div>
-                <div class="bg">交易新手，内测期会员</div>
-              </div>
-              <div class="testimonial-card">
-                <div class="avatar">莫</div>
-                <div class="name">莫文辉</div>
-                <div class="bg">股票 3 年，比特币半年</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="home-section">
             <div class="cta-home">
-              <h3>开始学习</h3>
-              <p>StockMind AI 投资交易课 — 让你的认知变为财富</p>
-              <button class="btn" data-view="courses">前往课程 →</button>
+              <h3>开始用 AI 分析你的第一只股票</h3>
+              <p>StockMind AI — 让数据说话，让投资有据可依</p>
+              <button class="btn" onclick="document.getElementById('homeAiSearch').focus()">
+                立即体验 →
+              </button>
             </div>
           </div>
         </div>
@@ -490,148 +326,223 @@
         <!-- ━━━━ Pyramid View ━━━━ -->
         <div class="view-section" id="view-pyramid">
           <div class="pyramid-hero">
-            <h1>🔺 金字塔 · <span>上涨潜力排行榜</span></h1>
-            <p>基于 StockMind AI 独家价值投资评分体系，全市场股票综合排名</p>
+            <h1>🔺 金字塔 · <span>评分排行榜</span></h1>
+            <p>基于五维评分体系（估值/规模/趋势/流动/稳定），全市场实时数据综合排名</p>
           </div>
-          <div class="pyramid-list" id="pyramidList"></div>
-        </div>
-
-        <!-- ━━━━ Contrast View ━━━━ -->
-        <div class="view-section" id="view-contrast">
-          <div class="pyramid-hero" style="padding-bottom: 16px">
-            <h1>⇆ 个股<span>对比</span></h1>
-            <p>选择多只股票，横向对比财务指标</p>
+          <div class="pyramid-list" id="pyramidList">
+            <div class="pyramid-loading">
+              <div class="spinner"></div>
+              <span>正在扫描全市场，计算金字塔评分...</span>
+            </div>
           </div>
-          <div class="contrast-search" id="contrastSearch">
-            <input
-              type="text"
-              id="contrastInput"
-              placeholder="输入股票代码或名称..."
-              autocomplete="off"
-            />
-            <div id="contrastTags"></div>
-          </div>
-          <div id="contrastTableArea"></div>
         </div>
 
         <!-- ━━━━ Courses View ━━━━ -->
         <div class="view-section" id="view-courses">
           <div class="courses-hero">
-            <h1>📖 投资交易课 · <span>从零到稳定盈利</span></h1>
-            <p>站长"大苏"（Emile Su）将十年交易经验系统化整理的图文课程体系</p>
+            <h1>🤖 AI 辅助投资 · <span>从小白到入门</span></h1>
+            <p>学会用 AI 工具完成信息收集 → 数据分析 → 指标解读 → 交易判断的完整流程</p>
           </div>
 
           <div class="courses-notice">
-            <h3>📌 学习须知</h3>
+            <h3>📌 课程说明</h3>
             <ul>
               <li>
-                <strong>设备要求：</strong>必须用台式电脑阅读，不要用手机。课程会用到 StockMind AI
-                工具或股票软件做验证
+                <strong>目标：</strong>让完全没有金融背景的小白，也能借助 AI
+                工具看懂股票、做出自己的判断
               </li>
               <li>
-                <strong>学习态度：</strong>课程前请"暂且认为自己是个交易小白"，按顺序学习不跳步
+                <strong>核心理念：</strong>AI
+                不是替你决策，而是帮你把海量信息处理成可理解的结论，决策权永远在你手中
               </li>
               <li>
-                <strong>两个要求：</strong>① 找对的方法（低风险、高胜率）；②
-                找到对的股票（长期上涨潜力）
+                <strong>配套工具：</strong>本课程所有步骤都可以用 StockMind AI 的筛选器、AI
+                分析、对比工具完成
               </li>
             </ul>
           </div>
 
           <div class="chapter-list">
-            <div class="chapter-item">
-              <div class="chapter-num special">P</div>
+            <div class="chapter-item" data-chapter="ch-01">
+              <div class="chapter-num special">01</div>
               <div class="chapter-info">
-                <div class="chapter-title">前言 — 来自作者的一封信</div>
-                <div class="chapter-count">写给每一个想通过交易改变命运的人</div>
+                <div class="chapter-title">信息收集 — AI 帮你过滤噪音</div>
+                <div class="chapter-count">
+                  学会让 AI 自动收集市场资讯、个股新闻、行业动态、资金流向，不再被碎片信息淹没
+                </div>
               </div>
-              <span class="chapter-badge highlight">序言</span>
+              <span class="chapter-badge highlight">信息</span>
             </div>
-            <div class="chapter-item">
-              <div class="chapter-num">1</div>
+            <div class="chapter-item" data-chapter="ch-02">
+              <div class="chapter-num">02</div>
               <div class="chapter-info">
-                <div class="chapter-title">投资交易的几个误区</div>
-                <div class="chapter-count">认清常见陷阱，避免走弯路</div>
+                <div class="chapter-title">数据获取 — 一键拉取真实数据</div>
+                <div class="chapter-count">
+                  用 AI 工具自动拉取 A 股实时行情、财务数据（PE/PB/ROE/毛利率等），告别手动翻财报
+                </div>
               </div>
-              <span class="chapter-badge">8 篇</span>
+              <span class="chapter-badge">数据</span>
             </div>
-            <div class="chapter-item">
-              <div class="chapter-num">2</div>
+            <div class="chapter-item" data-chapter="ch-03">
+              <div class="chapter-num">03</div>
               <div class="chapter-info">
-                <div class="chapter-title">寻找具备长期上涨潜力的股票</div>
-                <div class="chapter-count">财务数据——最高效客观的方法</div>
+                <div class="chapter-title">财务指标分析 — AI 帮你读财报</div>
+                <div class="chapter-count">
+                  不理解 RoE 是什么意思？AI 用大白话解释每个财务指标，并告诉你"好"的标准是什么
+                </div>
               </div>
-              <span class="chapter-badge">17 篇</span>
+              <span class="chapter-badge">财务</span>
             </div>
-            <div class="chapter-item">
-              <div class="chapter-num">3</div>
+            <div class="chapter-item" data-chapter="ch-04">
+              <div class="chapter-num">04</div>
               <div class="chapter-info">
-                <div class="chapter-title">选股策略——快速筛选出潜力股</div>
-                <div class="chapter-count">系统化的选股框架，缩小标的范围</div>
+                <div class="chapter-title">技术指标入门 — AI 辅助看趋势</div>
+                <div class="chapter-count">
+                  均线、MACD、KDJ 是什么？AI 帮你画图、解读信号，但不替你做买卖决定
+                </div>
               </div>
-              <span class="chapter-badge">9 篇</span>
+              <span class="chapter-badge">技术</span>
             </div>
-            <div class="chapter-item">
-              <div class="chapter-num">4</div>
+            <div class="chapter-item" data-chapter="ch-05">
+              <div class="chapter-num">05</div>
               <div class="chapter-info">
-                <div class="chapter-title">寻找低风险、高胜率的交易时机</div>
-                <div class="chapter-count">安全、胜率、效率的统一</div>
+                <div class="chapter-title">行业对比 — AI 横向扫描</div>
+                <div class="chapter-count">
+                  用 AI 快速对比同行业多只股票的核心指标，找出数据最突出的那一个
+                </div>
               </div>
-              <span class="chapter-badge">13 篇</span>
+              <span class="chapter-badge">筛选</span>
             </div>
-            <div class="chapter-item">
-              <div class="chapter-num">5</div>
+            <div class="chapter-item" data-chapter="ch-06">
+              <div class="chapter-num">06</div>
               <div class="chapter-info">
-                <div class="chapter-title">交易管理——让规则来决定行动</div>
-                <div class="chapter-count">仓位管理、止损止盈、交易纪律</div>
+                <div class="chapter-title">综合判断 — AI 辅助决策框架</div>
+                <div class="chapter-count">
+                  把信息、数据、指标汇总到一个检查清单，AI 生成分析简报，你做最终判断
+                </div>
               </div>
-              <span class="chapter-badge">11 篇</span>
+              <span class="chapter-badge highlight">决策</span>
             </div>
-            <div class="chapter-item">
+            <div class="chapter-item" data-chapter="ch-E">
               <div class="chapter-num special">E</div>
               <div class="chapter-info">
-                <div class="chapter-title">赚到钱，才是最终目的</div>
-                <div class="chapter-count">结语 — 从知识到行动，从行动到结果</div>
+                <div class="chapter-title">实战演练 — 用 AI 分析一只股票完整流程</div>
+                <div class="chapter-count">
+                  拿一只真实 A 股走一遍全流程：收集信息→拉取数据→分析指标→做出判断
+                </div>
               </div>
-              <span class="chapter-badge highlight">结语</span>
+              <span class="chapter-badge highlight">实战</span>
+            </div>
+            <div class="chapter-item" data-chapter="ch-07">
+              <div class="chapter-num">07</div>
+              <div class="chapter-info">
+                <div class="chapter-title">AI 分析功能拆解 — 数据流与实现逻辑</div>
+                <div class="chapter-count">
+                  深入理解 AI 分析的数据来源、处理流程和 LLM 调用机制，学会如何用好这个工具
+                </div>
+              </div>
+              <span class="chapter-badge">原理</span>
             </div>
           </div>
 
           <div class="qa-section">
-            <h2>💬 会员专属问答 <span>2025.06.05 — 2025.06.14</span></h2>
+            <h2>💡 用 AI 投资的常见问题</h2>
             <div class="qa-grid">
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 如何判断出场点？
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    'AI 不会也不能荐股。所有分析数据都来自公开的东方财富 API，AI 只负责整理和解读，最终买卖决定是你自己的选择。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> AI 能帮我荐股吗？
               </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 行业股怎么选？
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    '不需要。你只需要会打字提问、会看数字大小即可。AI 会用大白话解释每个指标，看不懂随时追问。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> 需要懂财务知识吗？
               </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 周期股的买卖逻辑
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    '先学 01-02 步（信息收集+数据获取），然后在筛选器里选一个行业试试看，一边操作一边理解更有感觉。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> 从哪里开始学？
               </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 互联网公司如何估值？
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    '数据来自东方财富公开 API（免费公开数据），不是 AI 凭空生成的。AI 只负责整理、计算和解读，原始数据可查。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> AI 给出的数据可信吗？
               </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 止损位怎么设？
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    '打开 StockMind AI → 首页 AI 分析输入框 → 输入股票代码/名称 → 点击分析。AI 会自动获取数据并生成分析简报。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> 如何用 AI 分析一只股票？
               </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 分红率重要吗？
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    '可以先从 03 财务指标开始学，也可以直接用 AI 分析工具，在分析结果中 AI 会自动解读关键指标的含义。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> 看不懂指标怎么办？
               </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 美股和A股差异？
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    '不是。技术指标（K 线、MACD 等）反映的是过去的价格行为，不等于未来走势。AI 只是帮你读图，不预测涨跌。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> AI 看技术指标准吗？
               </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 什么时候加仓？
-              </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 长期持有还是波段？
-              </button>
-              <button class="qa-item" onclick="alert('模拟：跳转到问答详情页')">
-                <span class="q">Q.</span> 如何控制回撤？
+              <button
+                class="qa-item"
+                onclick="
+                  alert(
+                    '不会。AI 没有情绪，不会因为&quot;大家都在买&quot;就跟着推荐。它只陈述数据和指标，帮你降低情绪干扰。'
+                  )
+                "
+              >
+                <span class="q">Q.</span> AI 会被市场情绪影响吗？
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- ━━━━ Course Detail View ━━━━ -->
+        <div class="view-section" id="view-course-detail">
+          <div class="cd-header">
+            <button class="cd-back" id="courseDetailBack">← 返回课程列表</button>
+            <div class="cd-meta">
+              <span class="cd-badge" id="courseDetailBadge"></span>
+              <span class="cd-num">第 <span id="courseDetailNum"></span> 章</span>
+            </div>
+            <h1 class="cd-title" id="courseDetailTitle"></h1>
+          </div>
+          <div class="cd-content" id="courseDetailContent"></div>
         </div>
 
         <!-- ━━━━ About View ━━━━ -->
@@ -842,15 +753,374 @@
                 </div>
               </div>
             </div>
+
+            <div class="about-section about-legal">
+              <h2>📄 法律信息</h2>
+              <p class="about-desc">
+                <a
+                  href="#"
+                  onclick="
+                    openTermsModal();
+                    return false;
+                  "
+                  >服务条款</a
+                >
+                <span class="about-legal-sep">·</span>
+                <a
+                  href="#"
+                  onclick="
+                    openPrivacyModal();
+                    return false;
+                  "
+                  >隐私政策</a
+                >
+                <span class="about-legal-sep">·</span>
+                <span>© 2026 StockMind AI</span>
+              </p>
+            </div>
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+       Login Modal
+       ═══════════════════════════════════════════ -->
+    <div class="modal-overlay hidden" id="loginModal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeLoginModal()">✕</button>
+        <h2>登录 StockMind AI</h2>
+        <p class="modal-sub">选择以下方式登录，享受会员功能</p>
+        <div class="auth-providers">
+          <button class="auth-provider-btn github" onclick="githubLogin()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+              />
+            </svg>
+            GitHub 登录
+          </button>
+          <button class="auth-provider-btn wechat" onclick="wechatLogin()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path
+                d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 01.598.082l1.584.926a.272.272 0 00.14.045c.134 0 .241-.11.241-.245 0-.06-.024-.12-.04-.178l-.325-1.233a.49.49 0 01.177-.553C23.028 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-7.062-6.122zm-2.18 2.876c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.97-.982zm4.36 0c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.97-.982z"
+              />
+            </svg>
+            微信登录
+          </button>
+        </div>
+        <div class="auth-tips">
+          登录即表示同意
+          <a
+            href="#"
+            onclick="
+              openTermsModal();
+              return false;
+            "
+            >服务条款</a
+          >
+          和
+          <a
+            href="#"
+            onclick="
+              openPrivacyModal();
+              return false;
+            "
+            >隐私政策</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- ━━━━ Upgrade Modal ━━━━ -->
+    <div class="modal-overlay hidden" id="upgradeModal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeUpgradeModal()">✕</button>
+        <h2>升级为会员</h2>
+        <p class="modal-sub">一次付费，永久有效 · 解锁全部高级功能</p>
+        <div class="upgrade-card">
+          <div class="upgrade-price">¥368 <span class="upgrade-price-unit">CNY</span></div>
+          <div class="upgrade-duration">永久有效</div>
+          <ul class="upgrade-benefits">
+            <li>✅ 金字塔评分排行榜（A 股全市场扫描）</li>
+            <li>✅ AI 分析无限次使用</li>
+            <li>✅ 全部投资交易课（含后续进阶课程）</li>
+            <li>✅ 添加大苏个人微信，股票问题随时咨询</li>
+          </ul>
+          <div class="upgrade-pay">
+            <p class="upgrade-pay-title">选择支付方式</p>
+            <div class="upgrade-pay-btns">
+              <button
+                class="upgrade-pay-btn"
+                onclick="alert('⚠️ 支付功能暂未开放，请联系管理员手动开通\n\n微信：dashu_stock')"
+              >
+                <span>💬 微信</span>
+                <span class="sub">扫码 / 红包</span>
+              </button>
+              <button
+                class="upgrade-pay-btn"
+                onclick="
+                  alert('⚠️ 支付功能暂未开放，请联系管理员手动开通\n\n邮箱：admin@stockmind.ai')
+                "
+              >
+                <span>🌐 PayPal</span>
+                <span class="sub">海外用户</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ━━━━ Terms of Service Modal ━━━━ -->
+    <div class="modal-overlay hidden" id="termsModal">
+      <div class="modal-content modal-content--tall">
+        <button class="modal-close" onclick="closeTermsModal()">✕</button>
+        <h2>服务条款</h2>
+        <div class="legal-content">
+          <p>最后更新：2026 年 6 月</p>
+          <h3>1. 服务说明</h3>
+          <p>
+            StockMind AI 是一个面向个人投资者的在线学习与辅助分析平台。平台提供 AI
+            驱动的股票数据分析、投资教育课程、市场数据查询等功能。
+          </p>
+          <h3>2. 免责声明</h3>
+          <p>
+            <strong
+              >重要：StockMind AI
+              提供的所有数据、分析结果、课程内容仅供参考和学习用途，不构成任何投资建议、买卖推荐或投资决策依据。</strong
+            >
+          </p>
+          <p>
+            所有市场数据来源于东方财富公开
+            API，平台不保证数据的实时性、准确性和完整性。用户在做出任何投资决策前，应独立核实相关数据并咨询持牌专业投资顾问。
+          </p>
+          <p>
+            股市有风险，投资需谨慎。因使用本平台信息而导致的任何投资损失，StockMind AI
+            不承担任何法律责任。
+          </p>
+          <h3>3. 用户责任</h3>
+          <p>
+            用户不得利用本平台从事任何违法活动，不得批量抓取平台数据用于商业目的。用户对其在平台上的所有行为承担全部责任。
+          </p>
+          <h3>4. 会员服务</h3>
+          <p>
+            会员服务为一次性付费、永久有效的模式。会员权益包括：金字塔评分排行榜、AI
+            分析无限次使用、全部投资交易课等。平台保留在未来调整会员权益的权利，但不会降低已购买会员的核心权益。
+          </p>
+          <h3>5. 隐私保护</h3>
+          <p>我们重视用户隐私。详细内容请查看《隐私政策》。</p>
+          <h3>6. 联系我们</h3>
+          <p>
+            如有任何问题，请通过以下方式联系我们：<br />邮箱：admin@stockmind.ai<br />微信：dashu_stock
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ━━━━ Privacy Policy Modal ━━━━ -->
+    <div class="modal-overlay hidden" id="privacyModal">
+      <div class="modal-content modal-content--tall">
+        <button class="modal-close" onclick="closePrivacyModal()">✕</button>
+        <h2>隐私政策</h2>
+        <div class="legal-content">
+          <p>最后更新：2026 年 6 月</p>
+          <h3>1. 信息收集</h3>
+          <p>我们通过 GitHub OAuth 和微信 OAuth 收集以下信息：</p>
+          <ul>
+            <li>GitHub：用户名、头像、邮箱地址（经用户授权）</li>
+            <li>微信：昵称、头像（经用户授权）</li>
+          </ul>
+          <p>此外，我们会记录 AI 分析功能的使用次数，用于管理免费用户的每日使用限额。</p>
+          <h3>2. 信息存储</h3>
+          <p>
+            用户信息存储在本服务器（位于中国重庆），采用 JSON
+            文件格式。我们采取合理的安全措施保护用户数据，但无法保证绝对安全。
+          </p>
+          <h3>3. 信息使用</h3>
+          <p>
+            收集的信息仅用于：提供登录服务、管理会员状态、提供个性化体验。我们不会将用户信息出售或分享给第三方。
+          </p>
+          <h3>4. 数据保留</h3>
+          <p>用户数据将在账户活跃期间持续保留。用户可以随时联系管理员删除自己的账户及关联数据。</p>
+          <h3>5. 第三方服务</h3>
+          <p>本平台使用以下第三方服务：</p>
+          <ul>
+            <li>GitHub OAuth —— 用户身份验证</li>
+            <li>腾讯行情 API（qt.gtimg.cn）—— A 股实时行情数据</li>
+            <li>东方财富 API —— 股票搜索和财务数据</li>
+            <li>DeepSeek / Anthropic —— AI 分析服务</li>
+          </ul>
+          <p>以上第三方服务各自有其隐私政策，不受本平台控制。</p>
+          <h3>6. 联系我们</h3>
+          <p>邮箱：admin@stockmind.ai<br />微信：dashu_stock</p>
+        </div>
+      </div>
     </div>
 
     <script src="js/hold-le-data.js"></script>
     <script src="js/hold-le-ui.js"></script>
     <script src="js/hold-le-stock-modal.js"></script>
     <script src="js/hold-le-ai-chat.js"></script>
+    <script>
+      // ═══════════════════════════════════════════
+      // Auth — 登录状态管理
+      // ═══════════════════════════════════════════
+      const AUTH_KEY = 'stockmind_token';
+
+      function getToken() {
+        return localStorage.getItem(AUTH_KEY);
+      }
+      function setToken(t) {
+        if (t) localStorage.setItem(AUTH_KEY, t);
+        else localStorage.removeItem(AUTH_KEY);
+      }
+      function isLoggedIn() {
+        return !!getToken();
+      }
+
+      // 解析 JWT payload（不含验签）
+      function parseToken(token) {
+        try {
+          const parts = token.split('.');
+          if (parts.length !== 3) return null;
+          return JSON.parse(atob(parts[1]));
+        } catch {
+          return null;
+        }
+      }
+
+      // 检查 URL 中的 auth 参数（OAuth 回调）
+      function handleAuthRedirect() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('auth') === 'token') {
+          const token = params.get('token');
+          if (token) {
+            setToken(token);
+          }
+          // 清除 URL 参数
+          window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+          updateAuthUI();
+        } else if (params.get('auth') === 'err') {
+          const msg = params.get('msg') || '登录失败';
+          alert('登录失败：' + msg);
+          window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+        }
+      }
+
+      // 登录弹窗
+      function openLoginModal() {
+        document.getElementById('loginModal').classList.remove('hidden');
+      }
+      function closeLoginModal() {
+        document.getElementById('loginModal').classList.add('hidden');
+      }
+
+      // 升级弹窗
+      function openUpgradeModal() {
+        document.getElementById('upgradeModal').classList.remove('hidden');
+        document.getElementById('userDropdown').classList.remove('open');
+      }
+      function closeUpgradeModal() {
+        document.getElementById('upgradeModal').classList.add('hidden');
+      }
+
+      // 服务条款弹窗
+      function openTermsModal() {
+        document.getElementById('termsModal').classList.remove('hidden');
+      }
+      function closeTermsModal() {
+        document.getElementById('termsModal').classList.add('hidden');
+      }
+
+      // 隐私政策弹窗
+      function openPrivacyModal() {
+        document.getElementById('privacyModal').classList.remove('hidden');
+      }
+      function closePrivacyModal() {
+        document.getElementById('privacyModal').classList.add('hidden');
+      }
+
+      // 点击遮罩关闭所有弹窗
+      document.addEventListener('click', function (e) {
+        ['loginModal', 'upgradeModal', 'termsModal', 'privacyModal'].forEach((id) => {
+          const modal = document.getElementById(id);
+          if (e.target === modal) modal.classList.add('hidden');
+        });
+      });
+
+      // 获取 auth header（用于 API 请求）
+      function getAuthHeaders() {
+        const token = getToken();
+        return token ? { Authorization: 'Bearer ' + token } : {};
+      }
+
+      // GitHub 登录
+      function githubLogin() {
+        window.location.href = '/api/auth/github';
+      }
+
+      // 微信登录
+      function wechatLogin() {
+        window.location.href = '/api/auth/wechat';
+      }
+
+      // 退出登录
+      function handleLogout() {
+        setToken(null);
+        updateAuthUI();
+        closeLoginModal();
+      }
+
+      // 更新 UI — 切换登录按钮 / 用户菜单
+      function updateAuthUI() {
+        const token = getToken();
+        const loginBtn = document.getElementById('loginBtn');
+        const userMenu = document.getElementById('userMenu');
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        const dropdownName = document.getElementById('userDropdownName');
+        const dropdownStatus = document.getElementById('userDropdownStatus');
+        const upgradeBtn = document.getElementById('upgradeBtn');
+
+        if (token) {
+          const user = parseToken(token);
+          if (user) {
+            loginBtn.classList.add('hidden');
+            userMenu.classList.remove('hidden');
+            userName.textContent = user.name || '用户';
+            userAvatar.src = user.avatar || '';
+            dropdownName.textContent = user.name || '用户';
+            if (user.isMember) {
+              dropdownStatus.textContent = '🌟 会员用户';
+              dropdownStatus.className = 'user-dropdown__status member';
+              if (upgradeBtn) upgradeBtn.style.display = 'none';
+            } else {
+              dropdownStatus.textContent = '免费用户';
+              dropdownStatus.className = 'user-dropdown__status';
+            }
+            return;
+          }
+        }
+        loginBtn.classList.remove('hidden');
+        userMenu.classList.add('hidden');
+      }
+
+      // 点击用户名切换下拉菜单
+      document.addEventListener('click', function (e) {
+        const dropdown = document.getElementById('userDropdown');
+        const userMenu = document.getElementById('userMenu');
+        if (userMenu.contains(e.target) && e.target !== dropdown && !dropdown.contains(e.target)) {
+          dropdown.classList.toggle('open');
+        } else if (!e.target.closest('.user-menu')) {
+          dropdown.classList.remove('open');
+        }
+      });
+
+      // 初始化
+      handleAuthRedirect();
+      updateAuthUI();
+    </script>
     <script src="js/hold-le-app.js"></script>
   </body>
 </html>

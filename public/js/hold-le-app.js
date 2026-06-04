@@ -2,7 +2,7 @@
    StockMind AI · App Entry — State, Navigation, Events
    ═══════════════════════════════════════════ */
 /* globals INDUSTRIES, generateStockDB, generatePyramid,
-   renderSidebar, renderMetrics, renderPyramid, renderContrast, showSearchResults */
+   renderSidebar, renderMetrics, renderPyramid, showSearchResults */
 
 (function () {
   'use strict';
@@ -15,12 +15,9 @@
   // Expose for UI layer's findStock()
   window.__stockDB = stockDB;
   const allStocks = Object.values(stockDB).flat();
-  const pyramidData = generatePyramid();
 
   let currentView = 'home';
   let selectedIndustry = null;
-  let contrastStocks = [];
-  // 跟踪当前使用的数据源模式：'real' | 'mock' | null
   let dataMode = null;
 
   // Expose state mutators so UI layer can call back
@@ -45,10 +42,6 @@
         dataMode = 'mock';
         renderMetrics(selectedIndustry, stockDB);
       }
-    },
-    removeContrastStock(code) {
-      contrastStocks = contrastStocks.filter((s) => s.code !== code);
-      renderContrast(contrastStocks);
     },
   };
 
@@ -84,8 +77,7 @@
       sidebar.style.display = 'none';
     }
 
-    if (view === 'pyramid') renderPyramid(pyramidData);
-    if (view === 'contrast') renderContrast(contrastStocks);
+    if (view === 'pyramid') fetchAndRenderPyramid();
   }
 
   // ════════════════════════════════════════════
@@ -110,31 +102,25 @@
   // Home CTA → courses
   document.querySelector('.cta-home .btn')?.addEventListener('click', () => switchView('courses'));
 
+  // Chapter item clicks → course detail
+  document.querySelectorAll('.chapter-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      const chapterId = item.dataset.chapter;
+      if (chapterId) {
+        renderCourseDetail(chapterId);
+        switchView('course-detail');
+      }
+    });
+  });
+  // Back button
+  document
+    .getElementById('courseDetailBack')
+    .addEventListener('click', () => switchView('courses'));
+
   // Listing year filter
   document.getElementById('listingFilterA').addEventListener('change', () => {
     if (currentView === 'a-share' && selectedIndustry) {
       window.app.selectIndustry(selectedIndustry);
-    }
-  });
-
-  // Contrast search
-  const contrastInput = document.getElementById('contrastInput');
-  contrastInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && contrastInput.value.trim()) {
-      e.preventDefault();
-      const query = contrastInput.value.trim().toLowerCase();
-      const match = allStocks.find((s) => s.code.includes(query) || s.name.includes(query));
-      if (match) {
-        if (contrastStocks.length >= 5) {
-          alert('最多对比 5 只股票');
-        } else if (!contrastStocks.find((s) => s.code === match.code)) {
-          contrastStocks.push(match);
-          renderContrast(contrastStocks);
-        }
-        contrastInput.value = '';
-      } else {
-        alert('未找到该股票');
-      }
     }
   });
 
@@ -206,12 +192,35 @@
   const homeAiBtn = document.getElementById('homeAiSearchBtn');
   const homeAiResult = document.getElementById('homeAiResult');
 
+  let lastAiQuery = ''; // 用于重新请求
+
+  // 全局重新请求（被 onclick 调用）
+  window.retryAiAnalysis = function (q) {
+    lastAiQuery = q;
+    runHomeAiAnalysis(q);
+  };
+
   function findStockByQuery(query) {
     const q = query.trim().toLowerCase();
     return allStocks.find((s) => s.code.includes(q) || s.name.toLowerCase().includes(q)) || null;
   }
 
+  // 构建指标列表（仅含可用字段）
+  function buildMetricsSimple(data) {
+    const m = [];
+    if (data.roe != null) m.push({ label: 'RoE 股东权益报酬率', value: `${data.roe}%` });
+    if (data.eps != null) m.push({ label: 'EPS 每股收益', value: `${data.eps}` });
+    if (data.grossMargin != null) m.push({ label: '营业毛利率', value: `${data.grossMargin}%` });
+    if (data.opMargin != null) m.push({ label: '营业利益率', value: `${data.opMargin}%` });
+    if (data.netMargin != null) m.push({ label: '纯益率/净利率', value: `${data.netMargin}%` });
+    if (data.dividendRate != null) m.push({ label: '分红率', value: `${data.dividendRate}%` });
+    if (data.pe != null) m.push({ label: '市盈率 PE', value: `${data.pe}` });
+    if (data.pb != null) m.push({ label: '市净率 PB', value: `${data.pb}` });
+    return m.length ? m : [{ label: '暂无可用财务数据', value: '' }];
+  }
+
   async function runHomeAiAnalysis(query) {
+    lastAiQuery = query;
     const stock = findStockByQuery(query);
     if (!stock) {
       // 尝试从 API 搜索
@@ -220,28 +229,7 @@
         const s = apiResults[0];
         // 用 API 搜索到的代码继续分析
         const detail = await fetchRealStockDetail(s.code);
-        const metrics = detail
-          ? [
-              { label: 'RoE 股东权益报酬率', value: detail.roe != null ? `${detail.roe}%` : '—' },
-              {
-                label: '现金与约当现金比率',
-                value: detail.cashRatio != null ? `${detail.cashRatio}%` : '—',
-              },
-              {
-                label: '营业毛利率',
-                value: detail.grossMargin != null ? `${detail.grossMargin}%` : '—',
-              },
-              { label: '营业利益率', value: detail.opMargin != null ? `${detail.opMargin}%` : '—' },
-              {
-                label: '纯益率/净利率',
-                value: detail.netMargin != null ? `${detail.netMargin}%` : '—',
-              },
-              {
-                label: '分红率',
-                value: detail.dividendRate != null ? `${detail.dividendRate}%` : '—',
-              },
-            ]
-          : [];
+        const metrics = detail ? buildMetricsSimple(detail) : [];
 
         homeAiResult.innerHTML = `
           <div class="ai-result-card">
@@ -270,16 +258,24 @@
             statusEl.textContent = '✅ 分析完成';
             if (bodyEl) bodyEl.innerHTML = formatAiAnalysis(data.analysis || '未能生成分析报告');
           } else {
+            const errData = await res.json().catch(() => ({ error: '请求失败' }));
             statusEl.className = 'status error';
             statusEl.textContent = '❌ 分析失败';
-            if (bodyEl)
-              bodyEl.innerHTML = `<span style="color:var(--red-text)">⚠️ AI 分析暂时不可用</span>`;
+            if (bodyEl) {
+              bodyEl.className = 'ai-result-body';
+              bodyEl.innerHTML = `<span style="color:var(--red-text)">⚠️ ${errData.error || 'AI 分析暂时不可用'}</span>
+                <button class="btn btn-primary" style="margin-top:12px;font-size:13px" onclick="retryAiAnalysis('${query.replace(/'/g, "\\'")}')">🔄 重新请求</button>`;
+            }
           }
         } catch (err) {
           const statusEl = homeAiResult.querySelector('.status');
           if (statusEl) {
             statusEl.className = 'status error';
             statusEl.textContent = '❌ 网络错误';
+          }
+          const bodyEl = homeAiResult.querySelector('.ai-result-body');
+          if (bodyEl) {
+            bodyEl.innerHTML += `<br><button class="btn btn-primary" style="margin-top:12px;font-size:13px" onclick="retryAiAnalysis('${query.replace(/'/g, "\\'")}')">🔄 重新请求</button>`;
           }
         }
         homeAiBtn.disabled = false;
@@ -320,14 +316,7 @@
         body: JSON.stringify({
           code: stock.code,
           name: stock.name,
-          metrics: [
-            { label: 'RoE 股东权益报酬率', value: `${stock.roe || 0}%` },
-            { label: '现金与约当现金比率', value: `${stock.cashRatio || 0}%` },
-            { label: '营业毛利率', value: `${stock.grossMargin || 0}%` },
-            { label: '营业利益率', value: `${stock.opMargin || 0}%` },
-            { label: '纯益率/净利率', value: `${stock.netMargin || 0}%` },
-            { label: '分红率', value: `${stock.dividendRate || 0}%` },
-          ],
+          metrics: buildMetricsSimple(stock),
         }),
       });
 
@@ -347,7 +336,8 @@
         statusEl.textContent = '❌ 分析失败';
         if (bodyEl) {
           bodyEl.className = 'ai-result-body';
-          bodyEl.innerHTML = `<span style="color:var(--red-text)">⚠️ ${err.error || 'AI 分析暂时不可用'}</span>`;
+          bodyEl.innerHTML = `<span style="color:var(--red-text)">⚠️ ${err.error || 'AI 分析暂时不可用'}</span>
+            <button class="btn btn-primary" style="margin-top:12px;font-size:13px" onclick="retryAiAnalysis('${lastAiQuery.replace(/'/g, "\\'")}')">🔄 重新请求</button>`;
         }
       }
     } catch (err) {
@@ -359,7 +349,8 @@
       }
       if (bodyEl) {
         bodyEl.className = 'ai-result-body';
-        bodyEl.innerHTML = `<span style="color:var(--red-text)">⚠️ 网络错误：${err.message}</span>`;
+        bodyEl.innerHTML = `<span style="color:var(--red-text)">⚠️ 网络错误：${err.message}</span>
+          <button class="btn btn-primary" style="margin-top:12px;font-size:13px" onclick="retryAiAnalysis('${lastAiQuery.replace(/'/g, "\\'")}')">🔄 重新请求</button>`;
       }
     }
 

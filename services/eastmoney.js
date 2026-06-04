@@ -8,6 +8,8 @@
 const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
+const iconv = require('iconv-lite');
+const STOCK_UNIVERSE = require('./stock-universe');
 
 // ═══════════════════════════════════════════
 // 缓存层（内存 + 文件持久化）
@@ -67,49 +69,131 @@ const cache = new DataCache();
 // ═══════════════════════════════════════════
 
 const http = axios.create({
-  timeout: 5000,
+  timeout: 8000,
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     Referer: 'https://quote.eastmoney.com/',
   },
 });
 
-// 简易断路器 — API 连续失败 N 次后暂停请求 120 秒
-const circuitBreaker = { failures: 0, openUntil: 0 };
-function isCircuitOpen() {
-  return Date.now() < circuitBreaker.openUntil;
-}
-function recordFailure() {
-  circuitBreaker.failures++;
-  if (circuitBreaker.failures >= 3) {
-    circuitBreaker.openUntil = Date.now() + 120000;
-    circuitBreaker.failures = 0;
-  }
-}
-function recordSuccess() {
-  circuitBreaker.failures = 0;
-}
-
 /**
- * 带重试的 GET 请求
+ * 带重试的 GET 请求（不含断路器，可用于可靠的数据中心 API）
  */
 async function fetchWithRetry(url, retries = 2) {
-  if (isCircuitOpen()) {
-    throw new Error('断路器已打开：API 暂时不可用');
-  }
   for (let i = 0; i <= retries; i++) {
     try {
       const { data } = await http.get(url);
-      recordSuccess();
       return data;
     } catch (err) {
-      recordFailure();
       if (i === retries) {
         throw err;
       }
       await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
     }
   }
+}
+
+// ═══════════════════════════════════════════
+// 腾讯行情 API（替代 push2.eastmoney.com）
+// ═══════════════════════════════════════════
+
+const TENCENT_URL = 'http://qt.gtimg.cn/q=';
+
+/** Stock code → Tencent prefix */
+function txPrefix(code) {
+  if (code.startsWith('6')) {
+    return 'sh' + code;
+  }
+  return 'sz' + code;
+}
+
+/**
+ * 批量获取腾讯行情
+ * @param {string[]} codes 股票代码数组
+ * @returns {Promise<Object>} code → quote data map
+ */
+async function fetchTencentBatch(codes) {
+  if (!codes.length) {
+    return {};
+  }
+  const chunks = [];
+  for (let i = 0; i < codes.length; i += 100) {
+    chunks.push(codes.slice(i, i + 100));
+  }
+  const result = {};
+  for (const chunk of chunks) {
+    try {
+      const url = TENCENT_URL + chunk.map(txPrefix).join(',');
+      const resp = await axios.get(url, { timeout: 8000, responseType: 'arraybuffer' });
+      const data = iconv.decode(Buffer.from(resp.data), 'GBK');
+      // Parse each var line: v_CODE="f1~f2~...";
+      const matches = data.match(/v_(\w+)="([^"]+)"/g) || [];
+      for (const m of matches) {
+        const exec = m.match(/v_\w+="([^"]+)"/);
+        if (!exec) {
+          continue;
+        }
+        const fields = exec[1].split('~');
+        const code = fields[2] || '';
+        if (!code) {
+          continue;
+        }
+        result[code] = parseTencentRow(fields);
+      }
+    } catch (err) {
+      console.error(`[tencent] 批量获取失败 (${chunk.length}支): ${err.message}`);
+    }
+  }
+  return result;
+}
+
+/**
+ * 解析腾讯行情行
+ * 字段格式 (0-based):
+ *   0=市场, 1=名称, 2=代码, 3=现价, 4=昨收, 5=今开,
+ *   6=成交量(手), 7=外盘, 8=内盘,
+ *   9-18=买5价量, 19-28=卖5价量,
+ *   30=日期, 31=时间,
+ *   32=涨跌额, 33=涨跌幅, 34=最高, 35=最低,
+ *   36=量价字符串, 37=成交量(手), 38=成交额(万),
+ *   39=换手率, 40=PE(动态), 41=??,
+ *   42=涨停, 43=跌停,
+ *   44=总市值(亿), 45=流通市值(亿), 46=PB
+ */
+function parseTencentRow(f) {
+  const parseNum = (v) => {
+    if (v === undefined || v === null || v === '' || v === '-') {
+      return null;
+    }
+    const n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  };
+  const price = parseNum(f[3]);
+  const preClose = parseNum(f[4]);
+  const change = parseNum(f[31]);
+  const changePct = parseNum(f[32]);
+
+  return {
+    code: f[2] || '',
+    name: f[1] || '',
+    price,
+    prevClose: preClose,
+    open: parseNum(f[5]),
+    high: parseNum(f[33]),
+    low: parseNum(f[34]),
+    change,
+    changePercent: changePct,
+    amplitude: parseNum(f[43]), // 振幅(%)
+    volume: parseNum(f[36]), // 手
+    turnover: parseNum(f[37]), // 万元
+    turnoverRate: parseNum(f[38]), // 换手率(%)
+    pe: parseNum(f[39]), // 动态PE
+    pb: parseNum(f[46]), // PB
+    marketCap: parseNum(f[44]), // 总市值(亿)
+    floatMarketCap: parseNum(f[45]), // 流通市值(亿)
+    highLimit: parseNum(f[47]),
+    lowLimit: parseNum(f[48]),
+  };
 }
 
 // ═══════════════════════════════════════════
@@ -155,60 +239,34 @@ const EASTMONEY_INDUSTRIES = {
 };
 
 /**
- * 启动时尝试从东方财富获取行业板块列表（ BK 代码）
- * URL: push2.eastmoney.com/api/qt/clist/get?fs=m:90+t:2+f:!50
- * 返回所有行业板块的 BK 代码及名称，通过与本地行业名匹配来更新 bk 字段。
+ * 通过 searchadapter 获取行业板块的 BK 代码
+ * （push2 不可达时的替代方案）
  */
 async function discoverIndustries() {
-  try {
-    const url =
-      'https://push2.eastmoney.com/api/qt/clist/get' +
-      '?pn=1&pz=200&po=1&np=1&fltt=2&invt=2' +
-      '&fs=m:90+t:2+f:!50&fields=f12,f14&fid=f3';
-    const res = await fetchWithRetry(url);
-    const items = res?.data?.diff || [];
-    if (!items.length) {
-      console.warn('[eastmoney] 行业板块列表为空');
-      return false;
-    }
-
-    // 建立东方财富板块名称 → BK 代码的映射
-    const boardMap = new Map();
-    for (const item of items) {
-      const bkCode = String(item.f12 || '');
-      const boardName = (item.f14 || '').trim();
-      if (bkCode && boardName) {
-        boardMap.set(boardName, bkCode);
-      }
-    }
-
-    // 用本地行业名称匹配东方财富板块名称
-    let matched = 0;
-    for (const [key, ind] of Object.entries(EASTMONEY_INDUSTRIES)) {
-      // 精确匹配
-      if (boardMap.has(ind.name)) {
-        ind.bk = boardMap.get(ind.name);
-        matched++;
-        continue;
-      }
-      // 模糊匹配：行业名包含在板块名中（如 "银行" 可能匹配 "银行"）
-      for (const [boardName, bkCode] of boardMap) {
-        if (boardName.includes(ind.name) || ind.name.includes(boardName)) {
-          ind.bk = bkCode;
+  let matched = 0;
+  for (const [key, ind] of Object.entries(EASTMONEY_INDUSTRIES)) {
+    try {
+      const url =
+        `https://searchadapter.eastmoney.com/api/suggest/get` +
+        `?input=${encodeURIComponent(ind.name)}&count=3&type=14`;
+      const { data } = await axios.get(url, { timeout: 5000 });
+      const items = data?.QuotationCodeTable?.Data || [];
+      for (const item of items) {
+        // BK 板块条目：SecurityType === '9' 或 Code 以 BK 开头
+        if (item.Code && item.Code.startsWith('BK')) {
+          ind.bk = item.Code;
           matched++;
           break;
         }
       }
+    } catch {
+      // 单个行业搜索失败不影响其他
     }
-
-    console.log(
-      `[eastmoney] 行业板块发现完成：匹配 ${matched}/${Object.keys(EASTMONEY_INDUSTRIES).length} 个行业`
-    );
-    return true;
-  } catch (err) {
-    console.warn(`[eastmoney] 行业板块发现失败（不影响运行，将使用 legacy 筛选）: ${err.message}`);
-    return false;
   }
+  console.log(
+    `[eastmoney] 行业板块发现完成：匹配 ${matched}/${Object.keys(EASTMONEY_INDUSTRIES).length} 个行业`
+  );
+  return matched > 0;
 }
 
 // 模块加载时自动尝试发现
@@ -248,114 +306,28 @@ async function fetchStocksByIndustry(industryId, pageSize = 300) {
     return cached;
   }
 
-  const fields =
-    'f12,f14,f2,f3,f4,f15,f16,f17,f18,f20,f21,f23,f25,f37,f38,f45,f46,f62,f100,f115,f152,f153,f168,f169,f170,f171,f184';
+  // 先用股票宇宙 + 腾讯行情获取实时数据
+  const universeCodes = STOCK_UNIVERSE[industryId];
+  if (universeCodes && universeCodes.length > 0) {
+    try {
+      const quotes = await fetchTencentBatch(universeCodes);
+      const stocks = universeCodes.map((code) => quotes[code]).filter(Boolean);
 
-  try {
-    const fs = ind.bk ? `b:${ind.bk}+f:!50` : `m:${ind.m}+t:${ind.t}`;
-    const url =
-      `https://push2.eastmoney.com/api/qt/clist/get` +
-      `?pn=1&pz=${pageSize}&po=1&np=1&fltt=2&invt=2` +
-      `&fs=${fs}&fields=${fields}&fid=f3`;
-
-    const res = await fetchWithRetry(url);
-    const items = res?.data?.diff || [];
-    const total = res?.data?.total || items.length;
-
-    const stocks = items.map((item) => ({
-      code: String(item.f12 || ''),
-      name: item.f14 || '',
-      price: item.f2,
-      changePercent: item.f3,
-      change: item.f4,
-      high: item.f15,
-      low: item.f16,
-      open: item.f17,
-      prevClose: item.f18,
-      marketCap: item.f20,
-      floatMarketCap: item.f21,
-      pb: item.f23,
-      pe: item.f25,
-      peTTM: item.f38,
-      turnoverRate: item.f100,
-      amplitude: item.f171,
-      high52w: item.f168,
-      low52w: item.f169,
-      mainForceNetInflow: item.f62,
-      mainForceRatio: item.f184,
-    }));
-
-    // 过滤非个股条目（排除 BK/9 开头的指数代码）
-    const validStocks = stocks.filter((s) => /^\d{6}$/.test(s.code) && !s.code.startsWith('9'));
-
-    const result = {
-      industry: industryId,
-      industryName: ind.name,
-      count: validStocks.length,
-      total,
-      stocks: validStocks,
-    };
-    if (validStocks.length === 0) {
-      // 没有有效个股 → 记录失败，触发后续降级
-      recordFailure();
+      const result = {
+        industry: industryId,
+        industryName: ind.name,
+        count: stocks.length,
+        total: stocks.length,
+        stocks,
+      };
+      cache.set(cacheKey, result, CACHE_TTL.stocksByIndustry);
+      return result;
+    } catch (err) {
+      console.error(`[tencent] 获取 ${industryId} 行业行情失败:`, err.message);
     }
-    cache.set(cacheKey, result, CACHE_TTL.stocksByIndustry);
-    return result;
-  } catch (err) {
-    console.error(`[eastmoney] 获取 ${industryId} 行业股票失败:`, err.message);
-    // 尝试 JSONP 接口
-    return fetchStocksByIndustryFallback(industryId, pageSize);
-  }
-}
-
-/**
- * 备选：通过东方财富行情中心 JSONP 获取
- */
-async function fetchStocksByIndustryFallback(industryId, pageSize) {
-  const ind = EASTMONEY_INDUSTRIES[industryId];
-  const cacheKey = `stocks_fb:${industryId}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return cached;
   }
 
-  try {
-    const fields = 'f12,f14,f2,f3,f20,f23,f25,f62,f100,f115,f152,f153,f170,f184';
-    const fs = ind.bk ? `b:${ind.bk}+f:!50` : `m:${ind.m}+t:${ind.t}`;
-    const url =
-      `https://push2.eastmoney.com/api/qt/clist/get` +
-      `?pn=1&pz=${pageSize}&po=1&np=1&fltt=2&invt=2` +
-      `&fs=${fs}&fields=${fields}&fid=f3`;
-
-    const res = await fetchWithRetry(url);
-    const items = res?.data?.diff || [];
-
-    const stocks = items.map((item) => ({
-      code: String(item.f12 || ''),
-      name: item.f14 || '',
-      price: item.f2,
-      changePercent: item.f3,
-      marketCap: item.f20,
-      pb: item.f23,
-      pe: item.f25,
-      turnoverRate: item.f100,
-      mainForceNetInflow: item.f62,
-      mainForceRatio: item.f184,
-    }));
-
-    const validStocks = stocks.filter((s) => /^\d{6}$/.test(s.code) && !s.code.startsWith('9'));
-    const result = {
-      industry: industryId,
-      industryName: ind.name,
-      count: validStocks.length,
-      stocks: validStocks,
-    };
-    cache.set(cacheKey, result, CACHE_TTL.stocksByIndustry);
-    return result;
-  } catch (err) {
-    console.error(`[eastmoney] 备选接口也失败:`, err.message);
-    return null;
-  }
+  return null;
 }
 
 /**
@@ -368,51 +340,15 @@ async function fetchQuote(code) {
     return cached;
   }
 
-  // 转东方财富 secid 格式
-  const secCode = code.startsWith('6')
-    ? `1.${code}` // 上海
-    : `0.${code}`; // 深圳
-
-  const fields =
-    'f43,f44,f45,f46,f47,f48,f50,f57,f58,f168,f169,f170,f171,f23,f25,f100,f62,f115,f152,f153,f184';
-
   try {
-    const url =
-      `https://push2.eastmoney.com/api/qt/stock/get` +
-      `?secid=${secCode}&fields=${fields}&fltt=2&invt=2`;
-
-    const res = await fetchWithRetry(url);
-    const d = res?.data;
-    if (!d) {
-      return null;
+    const quotes = await fetchTencentBatch([code]);
+    const result = quotes[code] || null;
+    if (result) {
+      cache.set(cacheKey, result, CACHE_TTL.quote);
     }
-
-    const result = {
-      code: String(d.f57 || code),
-      name: d.f58 || '',
-      price: d.f43,
-      high: d.f44,
-      low: d.f45,
-      open: d.f46,
-      volume: d.f47,
-      turnover: d.f48,
-      marketCap: d.f50,
-      changePercent: d.f170,
-      amplitude: d.f171,
-      pb: d.f23,
-      pe: d.f25,
-      turnoverRate: d.f100,
-      mainForceNetInflow: d.f62,
-      high52w: d.f168,
-      low52w: d.f169,
-      change5d: d.f152,
-      change10d: d.f153,
-      mainForceRatio: d.f184,
-    };
-    cache.set(cacheKey, result, CACHE_TTL.quote);
     return result;
   } catch (err) {
-    console.error(`[eastmoney] 获取报价 ${code} 失败:`, err.message);
+    console.error(`[tencent] 获取报价 ${code} 失败:`, err.message);
     return null;
   }
 }
@@ -436,11 +372,11 @@ async function fetchFinancialData(code) {
   }
 
   try {
-    // 东方财富财务摘要 API
+    // 东方财富财务摘要 API — 使用中文缩写字段名
     const url =
       `https://datacenter.eastmoney.com/securities/api/data/v1/get` +
       `?reportName=RPT_F10_FINANCE_MAINFINADATA` +
-      `&columns=SECURITY_CODE,SECURITY_NAME_ABBR,REPORT_DATE,BASIC_EPS,WEIGHTAVG_ROE,GROSS_PROFIT_RATIO,NETPROFIT_MARGIN,OPERATE_PROFIT,DEDUCTEDPARENT_NETPROFIT,OPERATE_PROFIT_TO_GROSSPROFIT` +
+      `&columns=SECURITY_CODE,SECURITY_NAME_ABBR,REPORT_DATE,EPSJB,ROEJQ,XSMLL,XSJLL,PARENTNETPROFIT,KCFJCXSYJLR` +
       `&filter=(SECURITY_CODE="${code}")` +
       `&pageNumber=1&pageSize=4&sortTypes=-1&sortColumns=REPORT_DATE` +
       `&source=${DC_TOKEN}&client=WEB`;
@@ -459,20 +395,20 @@ async function fetchFinancialData(code) {
       code: latest.SECURITY_CODE,
       name: latest.SECURITY_NAME_ABBR,
       reportDate: latest.REPORT_DATE,
-      eps: latest.BASIC_EPS, // 基本每股收益
-      roe: latest.WEIGHTAVG_ROE, // 加权 RoE(%)
-      grossMargin: latest.GROSS_PROFIT_RATIO, // 毛利率(%)
-      netMargin: latest.NETPROFIT_MARGIN, // 净利率(%)
-      opProfit: latest.OPERATE_PROFIT, // 营业利润
-      opMargin: latest.OPERATE_PROFIT_TO_GROSSPROFIT, // 营业利润率(%)
-      deductedProfit: latest.DEDUCTEDPARENT_NETPROFIT, // 扣非净利润
+      eps: latest.EPSJB, // 基本每股收益
+      roe: latest.ROEJQ, // 加权 RoE(%)
+      grossMargin: latest.XSMLL, // 销售毛利率(%)
+      netMargin: latest.XSJLL, // 销售净利率(%)
+      opProfit: latest.PARENTNETPROFIT, // 归母净利润
+      opMargin: null, // 营业利润率不可直接获取
+      deductedProfit: latest.KCFJCXSYJLR, // 扣非净利润
       // 历史数据用于趋势对比
       history: items.map((item) => ({
         date: item.REPORT_DATE,
-        roe: item.WEIGHTAVG_ROE,
-        grossMargin: item.GROSS_PROFIT_RATIO,
-        netMargin: item.NETPROFIT_MARGIN,
-        eps: item.BASIC_EPS,
+        roe: item.ROEJQ,
+        grossMargin: item.XSMLL,
+        netMargin: item.XSJLL,
+        eps: item.EPSJB,
       })),
     };
 
@@ -523,6 +459,46 @@ async function fetchDividendData(code) {
     return result;
   } catch (err) {
     console.error(`[eastmoney] 获取分红 ${code} 失败:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * 获取公司简介（主营业务）
+ */
+async function fetchCompanyProfile(code) {
+  const cacheKey = `profile:${code}`;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const url =
+      `https://datacenter.eastmoney.com/securities/api/data/v1/get` +
+      `?reportName=RPT_F10_ORG_PROFILE` +
+      `&columns=SECURITY_CODE,SECURITY_NAME_ABBR,MAIN_BUSINESS,ORG_PROFILE` +
+      `&filter=(SECURITY_CODE="${code}")` +
+      `&pageNumber=1&pageSize=1` +
+      `&source=${DC_TOKEN}&client=WEB`;
+
+    const res = await fetchWithRetry(url);
+    const item = res?.result?.data?.[0];
+    if (!item) {
+      return null;
+    }
+
+    const result = {
+      code: item.SECURITY_CODE,
+      name: item.SECURITY_NAME_ABBR,
+      mainBusiness: item.MAIN_BUSINESS || '',
+      profile: item.ORG_PROFILE || '',
+    };
+
+    cache.set(cacheKey, result, CACHE_TTL.financial);
+    return result;
+  } catch (err) {
+    console.error(`[eastmoney] 获取公司简介 ${code} 失败:`, err.message);
     return null;
   }
 }
@@ -596,40 +572,40 @@ async function fetchMarketOverview() {
     return cached;
   }
 
-  // 上证、深证、创业板、科创50
+  // 上证、深证、创业板、科创50 — Tencent 代码前缀
   const indices = [
-    { code: '1.000001', name: '上证指数' },
-    { code: '0.399001', name: '深证成指' },
-    { code: '0.399006', name: '创业板指' },
-    { code: '1.000688', name: '科创50' },
+    { code: 'sh000001', name: '上证指数' },
+    { code: 'sz399001', name: '深证成指' },
+    { code: 'sz399006', name: '创业板指' },
+    { code: 'sh000688', name: '科创50' },
   ];
 
   try {
+    const url = TENCENT_URL + indices.map((i) => i.code).join(',');
+    const resp = await axios.get(url, { timeout: 8000, responseType: 'arraybuffer' });
+    const data = iconv.decode(Buffer.from(resp.data), 'GBK');
     const results = [];
-    for (const idx of indices) {
-      const url =
-        `https://push2.eastmoney.com/api/qt/stock/get` +
-        `?secid=${idx.code}&fields=f43,f44,f45,f46,f47,f48,f50,f57,f58,f170,f171,f169`;
-      const res = await fetchWithRetry(url);
-      const d = res?.data;
-      if (d) {
-        results.push({
-          name: d.f58 || idx.name,
-          code: String(d.f57 || idx.code),
-          price: d.f43,
-          changePercent: d.f170,
-          high: d.f44,
-          low: d.f45,
-          amplitude: d.f171,
-          volume: d.f47,
-        });
+    const matches = data.match(/v_\w+="([^"]+)"/g) || [];
+    for (const m of matches) {
+      const exec = m.match(/v_\w+="([^"]+)"/);
+      if (!exec) {
+        continue;
       }
+      const f = exec[1].split('~');
+      results.push({
+        name: f[1] || '',
+        code: f[2] || '',
+        price: parseFloat(f[3]) || 0,
+        changePercent: parseFloat(f[32]) || 0,
+        high: parseFloat(f[33]) || 0,
+        low: parseFloat(f[34]) || 0,
+        volume: parseFloat(f[36]) || 0,
+      });
     }
-
     cache.set(cacheKey, results, CACHE_TTL.quote);
     return results;
   } catch (err) {
-    console.error('[eastmoney] 获取市场概况失败:', err.message);
+    console.error('[tencent] 获取市场概况失败:', err.message);
     return [];
   }
 }
@@ -645,6 +621,7 @@ module.exports = {
   fetchFinancialData,
   fetchDividendData,
   fetchStockMetrics,
+  fetchCompanyProfile,
   searchStock,
   fetchMarketOverview,
   INDUSTRY_MAP: EASTMONEY_INDUSTRIES,

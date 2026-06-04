@@ -99,7 +99,7 @@ async function callOpenAICompatible(systemPrompt, userMessage, { maxTokens, temp
 /**
  * 个股 AI 分析简报
  */
-async function analyzeStock({ code, name, quote, metrics }) {
+async function analyzeStock({ code, name, quote, profile, metrics }) {
   // 未配置 API → 返回本地模板分析
   const templateResult = generateTemplateAnalysis({ code, name, quote, metrics });
 
@@ -114,9 +114,28 @@ async function analyzeStock({ code, name, quote, metrics }) {
 
 注意：分析基于有限数据，仅供学习参考，不构成投资建议。保持客观，不吹不黑。`;
 
+  // 完整行情数据
   const quoteText = quote
-    ? `当前股价: ${quote.price} 元 | 涨跌幅: ${quote.changePercent}% | 最高: ${quote.high} | 最低: ${quote.low}`
+    ? [
+        `当前股价: ${quote.price ?? '—'} 元`,
+        `涨跌幅: ${quote.changePercent ?? '—'}%`,
+        `涨跌额: ${quote.change ?? '—'} 元`,
+        `昨收: ${quote.prevClose ?? '—'} 元`,
+        `开盘: ${quote.open ?? '—'} 元`,
+        `最高: ${quote.high ?? '—'} 元`,
+        `最低: ${quote.low ?? '—'} 元`,
+        `振幅: ${quote.amplitude ?? '—'}%`,
+        `成交量: ${quote.volume ?? '—'} 手`,
+        `成交额: ${quote.turnover ?? '—'} 万元`,
+        `换手率: ${quote.turnoverRate ?? '—'}%`,
+        `市盈率 PE: ${quote.pe ?? '—'}`,
+        `市净率 PB: ${quote.pb ?? '—'}`,
+        `总市值: ${quote.marketCap ?? '—'} 亿`,
+      ].join(' | ')
     : '暂无实时行情数据';
+
+  // 公司简介
+  const profileText = profile ? `主营业务：${profile.mainBusiness || '—'}` : '暂无公司简介';
 
   const metricsText =
     metrics && metrics.length
@@ -124,6 +143,9 @@ async function analyzeStock({ code, name, quote, metrics }) {
       : '暂无详细财务指标';
 
   const userMessage = `请分析 ${name}（${code}）：
+
+【公司简介】
+${profileText}
 
 【行情数据】
 ${quoteText}
